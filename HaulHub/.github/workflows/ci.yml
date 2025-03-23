@@ -1,0 +1,206 @@
+name: HaulHub CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint-client:
+    name: Lint Client
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+          
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./client
+        
+      - name: Run ESLint
+        run: npm run lint
+        working-directory: ./client
+
+  test-client:
+    name: Test Client
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+          
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./client
+        
+      - name: Run tests
+        run: npm test -- --coverage
+        working-directory: ./client
+        
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./client/coverage
+          flags: client
+
+  build-client:
+    name: Build Client
+    runs-on: ubuntu-latest
+    needs: [lint-client, test-client]
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+          
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./client
+        
+      - name: Build client
+        run: npm run build
+        working-directory: ./client
+        
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: client-build
+          path: client/build
+
+  lint-server:
+    name: Lint Server
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+          
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./server
+        
+      - name: Run ESLint
+        run: npm run lint
+        working-directory: ./server
+
+  test-server:
+    name: Test Server
+    runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:5.0
+        ports:
+          - 27017:27017
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+          
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./server
+        
+      - name: Run tests
+        run: npm test -- --coverage
+        env:
+          MONGO_URI: mongodb://localhost:27017/haulhub_test
+          JWT_SECRET: test_secret
+        working-directory: ./server
+        
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./server/coverage
+          flags: server
+
+  test-contracts:
+    name: Test Smart Contracts
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+          cache-dependency-path: contracts/package-lock.json
+          
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./contracts
+        
+      - name: Run hardhat tests
+        run: npm test
+        working-directory: ./contracts
+
+  docker-compose-validation:
+    name: Validate Docker Compose
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Validate docker-compose.yml
+        run: docker-compose -f docker/docker-compose.yml config
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Run Snyk for client dependencies
+        uses: snyk/actions/node@master
+        with:
+          args: --file=client/package.json
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          
+      - name: Run Snyk for server dependencies
+        uses: snyk/actions/node@master
+        with:
+          args: --file=server/package.json
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          
+      - name: Run Snyk for contracts dependencies
+        uses: snyk/actions/node@master
+        with:
+          args: --file=contracts/package.json
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}

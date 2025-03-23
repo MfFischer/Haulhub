@@ -1,98 +1,97 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
 # Environment variables
 .env
+.env.local
+.env.development
+.env.test
+.env.production
 .env.*
-!.env.example
 
-# Node.js
-node_modules/
-npm-debug.log
-yarn-debug.log
-yarn-error.log
-package-lock.json
-yarn.lock
-.npm
+# Build outputs
+build/
+dist/
+out/
+coverage/
+.next/
+.nuxt/
+.vuepress/dist
 
-# Client build files
-/client/build/
-/client/dist/
-/client/.next/
-/client/out/
-/client/.cache/
-/client/coverage/
+# Contract artifacts and cache
+artifacts/
+cache/
+deployedAddresses.json
+typechain/
+typechain-types/
 
-# Server logs and build files
-/server/logs/
-/server/dist/
-/server/uploads/
-/server/coverage/
+# Client build
+client/build/
+client/dist/
+client/node_modules/
 
-# Contracts compilation and deployment
-/contracts/artifacts/
-/contracts/cache/
-/contracts/typechain/
-/contracts/deployedAddresses.json
-/contracts/coverage/
-/contracts/coverage.json
-/contracts/gas-report.txt
+# Server build
+server/node_modules/
+server/dist/
+server/uploads/
+server/logs/
 
-# Editor and OS files
-.DS_Store
+# Contracts
+contracts/node_modules/
+contracts/abis/
+
+# Testing
+coverage/
+coverage.json
+.nyc_output/
+
+# Editor directories
 .idea/
 .vscode/
-*.swp
-*.swo
-.history/
-.project
-.classpath
-.settings/
 *.sublime-project
 *.sublime-workspace
-*.log
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# Hardhat
-.hardhat/
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.directory
 
-# Debugging
-.log
-debug.log
-debug/
-temp/
-tmp/
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
 
 # Local Netlify folder
 .netlify
 
-# Firebase
-.firebase/
-firebase-debug.log
-firestore-debug.log
-ui-debug.log
-.firebaserc
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
 
-# Local development SSL certificates
-ssl/
-*.pem
-*.key
-*.crt
+# Hardhat
+.hardhat/
 
-# Test coverage
-.nyc_output
-.coverage
-coverage/
-
-# Miscellaneous
-.tmp/
-*.bak
-*~
-*#
-.#*
-
-# Generated files
-abis/
-/client/src/contracts/
-
-# Etherscan verification files
-flattened/
-flat/
-
-documents/
+# Misc
+.vercel
+.temp
+.cache/
+*.log
+tmp/
+temp/

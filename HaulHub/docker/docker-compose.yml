@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  client:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.client
+    container_name: haulhub-client
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_URL=http://api.haulhub.local/api
+      - REACT_APP_MAPBOX_TOKEN=${MAPBOX_TOKEN}
+      - REACT_APP_POLYGON_RPC_URL=${POLYGON_RPC_URL}
+    volumes:
+      - client_build:/app/build
+
+  server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.server
+    container_name: haulhub-server
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - HAULHUB_CONTRACT_ADDRESS=${HAULHUB_CONTRACT_ADDRESS}
+      - BADGE_NFT_CONTRACT_ADDRESS=${BADGE_NFT_CONTRACT_ADDRESS}
+      - POLYGON_MAINNET_RPC_URL=${POLYGON_MAINNET_RPC_URL}
+      - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:6.0
+    container_name: haulhub-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: haulhub
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+
+  nginx:
+    image: nginx:alpine
+    container_name: haulhub-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - client_build:/usr/share/nginx/html
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - client
+      - server
+
+volumes:
+  client_build:
+  mongodb_data:

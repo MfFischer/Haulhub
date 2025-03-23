@@ -22,7 +22,7 @@ HaulHub is a decentralized micro-freight platform that enables anyone with a bik
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/yourusername/haulhub.git
+   git clone https://github.com/MfFischer/Haulhub.git
    cd haulhub
    ```
 

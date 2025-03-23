@@ -1,109 +1,115 @@
 # HaulHub Smart Contracts
 
-This directory contains the smart contracts for the HaulHub decentralized delivery platform. The contracts are written in Solidity and are designed to run on the Polygon blockchain.
+This directory contains the smart contracts for the HaulHub decentralized delivery platform.
 
 ## Contracts
 
-- **HaulHub.sol** - Main contract handling job creation, payments, and dispute resolution
-- **BadgeNFT.sol** - NFT contract for hauler reputation badges
-- **DeliveryTracker.sol** - Contract for tracking delivery progress and proofs
+- **HaulHub.sol**: Main contract that manages job creation, payment processing, and escrow.
+- **BadgeNFT.sol**: NFT contract for issuing achievement badges to haulers.
+- **DeliveryTracker.sol**: Contract for tracking delivery progress with location and proof data.
 
-## Development
+## Technology Stack
 
-### Prerequisites
-
-- Node.js v16+
-- npm v8+
+- Solidity 0.8.17
 - Hardhat
+- Ethers.js
+- OpenZeppelin Contracts
 
-### Setup
+## Development Setup
 
 1. Install dependencies:
-   ```
+   ```bash
    npm install
    ```
 
-2. Create a `.env` file based on the provided example:
+2. Create a `.env` file based on the example provided and add your configuration.
+
+3. Compile the contracts:
+   ```bash
+   npm run compile
    ```
-   cp .env.example .env
+
+4. Run tests:
+   ```bash
+   npm run test
    ```
-   
-3. Fill in your environment variables in the `.env` file
 
-### Compilation
+## Contract Deployment
 
-Compile the contracts:
-```
-npm run compile
-```
+### Testnet (Mumbai)
 
-This will generate the artifacts in the `artifacts/` directory and export the ABIs to the `abis/` directory and to your client application.
-
-### Testing
-
-Run the tests:
-```
-npm run test
+```bash
+npm run deploy:testnet
 ```
 
-### Deployment
+### Mainnet (Polygon)
 
-#### Deploy to Testnet (Mumbai)
+```bash
+npm run deploy:mainnet
+```
 
-1. Make sure you have MATIC on the Mumbai testnet. You can get some from the [Mumbai Faucet](https://faucet.polygon.technology/).
+## Post Deployment
 
-2. Deploy to Mumbai testnet:
-   ```
-   npm run deploy:testnet
-   ```
+After deploying, the contract ABIs are automatically exported to:
+- `abis/` in this directory
+- `../client/src/contracts/` for the frontend
 
-#### Deploy to Mainnet
+Contract addresses are saved to `deployedAddresses.json` which is also copied to the client directory.
 
-1. Ensure you have sufficient MATIC on Polygon mainnet.
+## Contract Verification
 
-2. Deploy to Polygon mainnet:
-   ```
-   npm run deploy:mainnet
-   ```
+The deployment script automatically verifies the contracts on Polygonscan if the appropriate API keys are provided in the `.env` file.
 
-### Contract Addresses
+## Scripts
 
-After deployment, contract addresses will be saved to `deployedAddresses.json`. They will also be automatically exported to your client application.
+- `npm run compile` - Compile the contracts
+- `npm run export-abis` - Export contract ABIs
+- `npm run build` - Compile contracts and export ABIs
+- `npm run test` - Run contract tests
+- `npm run deploy:testnet` - Deploy to Mumbai testnet
+- `npm run deploy:mainnet` - Deploy to Polygon mainnet
 
-## Architecture
+## Testing
+
+Tests are located in the `test/` directory. Run specific test files with:
+
+```bash
+npx hardhat test test/HaulHub.test.js
+```
+
+## Contract Architecture
 
 ### HaulHub Contract
 
-The main contract for the platform, handling:
-- Job creation and payment escrow
-- Job lifecycle (create, accept, complete)
-- Fee calculations and payments
+Core contract that manages:
+- Job creation and lifecycle
+- Payment processing and escrow
+- Fee collection
 - Dispute resolution
 
 ### BadgeNFT Contract
 
-NFT-based reputation system for haulers:
-- Non-transferable badges
-- Different badge types for different achievements
-- Badge leveling system
-- Controlled issuance
+Non-transferable NFT implementation that:
+- Awards badges based on hauler achievements
+- Supports badge levels that can be upgraded
+- Uses a permissioned issuer system
 
 ### DeliveryTracker Contract
 
-Delivery tracking and proof system:
-- Location updates throughout delivery
-- Milestone tracking (pickup, dropoff, etc.)
-- Proof of delivery system
-- Integration with main HaulHub contract
+Specialized contract for:
+- Tracking delivery status and milestones
+- Storing location updates securely
+- Managing delivery proofs
+- Integration with the main HaulHub contract
 
-## Gas Optimization
+## Security Considerations
 
-These contracts are optimized for the Polygon network to keep gas costs low while maintaining functionality:
-- Efficient storage patterns
-- Minimal state changes
-- Batch operations for location updates
-- Limited string storage (using IPFS hashes)
+The contracts include:
+- Reentrancy protection
+- Access controls for sensitive operations
+- Ownership management
+- Gas optimization for mobile usage
 
 ## License
 
-[MIT](LICENSE)
+MIT

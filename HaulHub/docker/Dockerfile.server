@@ -1,0 +1,31 @@
+# Use Node.js LTS
+FROM node:16-alpine
+
+# Create app directory
+WORKDIR /app
+
+# Install build dependencies for node modules that require compilation
+RUN apk add --no-cache python3 make g++
+
+# Copy package files and install dependencies
+COPY package.json package-lock.json* ./
+RUN npm ci --only=production
+
+# Copy app source
+COPY . .
+
+# Create directories for logs and uploads if they don't exist
+RUN mkdir -p logs uploads
+
+# Set permissions for log and upload directories
+RUN chmod -R 755 logs uploads
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3001
+
+# Expose the API port
+EXPOSE 3001
+
+# Start the server
+CMD ["node", "index.js"]
