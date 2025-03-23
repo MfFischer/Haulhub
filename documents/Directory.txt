@@ -1,0 +1,54 @@
+HaulHub/
+├── /client                  # Frontend (React Native for mobile)
+│   ├── /public              # Static assets
+│   │   ├── index.html
+│   │   └── assets/          # Logos, badge icons, map pins
+│   ├── /src
+│   │   ├── /components      # Reusable UI
+│   │   │   ├── MapView.js   # Interactive haul map
+│   │   │   ├── JobCard.js   # Haul details ($5, 5 mi, 10 lbs)
+│   │   │   ├── Badge.js     # NFT badge display
+│   │   │   ├── PaymentSelector.js # PayPal, card, USDC picker
+│   │   │   └── Tracker.js   # Live hauler location
+│   │   ├── /pages           # Main screens
+│   │   │   ├── HaulerHome.js # Map + list for haulers
+│   │   │   ├── PosterHome.js # Post form + tracker
+│   │   │   ├── MyHauls.js   # History for both roles
+│   │   │   └── Wallet.js    # USDC, MATIC, cash-out
+│   │   ├── /hooks
+│   │   │   ├── usePolygon.js # Polygon wallet (MetaMask)
+│   │   │   └── useGeolocation.js # GPS for tracking
+│   │   ├── /styles          # Tailwind/CSS
+│   │   └── App.js           # Entry point, mode toggle
+│
+├── /server                  # Backend (Node.js)
+│   ├── /api                 # REST endpoints
+│   │   ├── /jobs            # List, claim, post hauls
+│   │   ├── /payments        # Fiat-to-USDC conversion
+│   │   └── /users           # Profiles, badges
+│   ├── /services
+│   │   ├── polygon.js       # Smart contract calls (escrow, badges)
+│   │   ├── payment.js       # Stripe, PayPal, Coinbase APIs
+│   │   ├── pricing.js       # $5 base + adjustments
+│   │   └── ai.js            # Route optimization, stacking
+│   ├── /config
+│   │   └── db.js            # MongoDB for off-chain data
+│   └── index.js             # Server entry
+│
+├── /contracts               # Solidity on Polygon
+│   ├── HaulHub.sol          # Escrow, payouts, haul rules
+│   ├── BadgeNFT.sol         # ERC-721 badges
+│   ├── /deploy              # Hardhat scripts (Mumbai testnet)
+│   └── /abis                # Compiled ABIs
+│
+├── /docs                    # Guides
+│   ├── README.md            # Project overview
+│   └── api.md               # API spec
+│
+├── /tests                   # Tests
+│   ├── /client
+│   ├── /server
+│   └── /contracts
+│
+├── package.json             # Deps (React Native, ethers.js, Express)
+└── .env                     # Polygon RPC, API keys

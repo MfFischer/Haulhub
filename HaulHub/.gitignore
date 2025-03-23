@@ -1,0 +1,96 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+.npm
+
+# Client build files
+/client/build/
+/client/dist/
+/client/.next/
+/client/out/
+/client/.cache/
+/client/coverage/
+
+# Server logs and build files
+/server/logs/
+/server/dist/
+/server/uploads/
+/server/coverage/
+
+# Contracts compilation and deployment
+/contracts/artifacts/
+/contracts/cache/
+/contracts/typechain/
+/contracts/deployedAddresses.json
+/contracts/coverage/
+/contracts/coverage.json
+/contracts/gas-report.txt
+
+# Editor and OS files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+.history/
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+*.log
+
+# Hardhat
+.hardhat/
+
+# Debugging
+.log
+debug.log
+debug/
+temp/
+tmp/
+
+# Local Netlify folder
+.netlify
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebaserc
+
+# Local development SSL certificates
+ssl/
+*.pem
+*.key
+*.crt
+
+# Test coverage
+.nyc_output
+.coverage
+coverage/
+
+# Miscellaneous
+.tmp/
+*.bak
+*~
+*#
+.#*
+
+# Generated files
+abis/
+/client/src/contracts/
+
+# Etherscan verification files
+flattened/
+flat/

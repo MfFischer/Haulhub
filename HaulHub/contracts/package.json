@@ -1,0 +1,29 @@
+{
+    "name": "haulhub-contracts",
+    "version": "1.0.0",
+    "description": "HaulHub Smart Contracts",
+    "main": "index.js",
+    "scripts": {
+        "compile": "hardhat compile",
+        "export-abis": "node scripts/export-abis.js",
+        "build": "hardhat compile && node scripts/export-abis.js",
+        "test": "hardhat test",
+        "deploy:testnet": "hardhat run scripts/deploy.js --network mumbai && node scripts/export-abis.js",
+        "deploy:mainnet": "hardhat run scripts/deploy.js --network polygon && node scripts/export-abis.js"
+    },
+    "devDependencies": {
+        "@nomiclabs/hardhat-ethers": "^2.2.3",
+        "@nomiclabs/hardhat-waffle": "^2.0.6",
+        "chai": "^4.5.0",
+        "ethereum-waffle": "^4.0.10",
+        "ethers": "^5.8.0",
+        "hardhat": "^2.22.19"
+    },
+    "dependencies": {
+        "@openzeppelin/contracts": "^4.9.6",
+        "dotenv": "^16.4.7"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+}
