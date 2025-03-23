@@ -95,3 +95,6 @@ next-env.d.ts
 *.log
 tmp/
 temp/
+
+# Project specific
+/documents/
