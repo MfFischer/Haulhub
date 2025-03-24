@@ -5,34 +5,28 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-/**
- * @title DeliveryTracker
- * @dev Contract for tracking delivery progress and proof for HaulHub
- * Records location updates, delivery milestones, and delivery proof
- */
+interface IHaulHub {
+    function getJobDetails(uint256 _jobId) external view returns (
+        uint256 id,
+        address poster,
+        address hauler,
+        uint256 payment,
+        uint256 tip,
+        uint256 fee,
+        uint256 createdAt,
+        uint256 acceptedAt,
+        uint256 completedAt,
+        uint8 status,
+        bool isRush,
+        string memory locationHash
+    );
+    
+    function startTransit(uint256 _jobId) external;
+    function completeJob(uint256 _jobId) external;
+}
+
 contract DeliveryTracker is Ownable, ReentrancyGuard {
     using ECDSA for bytes32;
-    
-    // Main HaulHub contract interface (minimal)
-    interface IHaulHub {
-        function getJobDetails(uint256 _jobId) external view returns (
-            uint256 id,
-            address poster,
-            address hauler,
-            uint256 payment,
-            uint256 tip,
-            uint256 fee,
-            uint256 createdAt,
-            uint256 acceptedAt,
-            uint256 completedAt,
-            uint8 status,
-            bool isRush,
-            string memory locationHash
-        );
-        
-        function startTransit(uint256 _jobId) external;
-        function completeJob(uint256 _jobId) external;
-    }
     
     // Status for delivery milestones
     enum DeliveryStatus {

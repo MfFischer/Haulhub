@@ -1,5 +1,4 @@
 require('@nomiclabs/hardhat-waffle');
-require('dotenv').config();
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
@@ -7,18 +6,12 @@ require('dotenv').config();
 module.exports = {
   solidity: "0.8.17",
   networks: {
-    hardhat: {},
-    mumbai: {
-      url: `https://polygon-mumbai.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      gas: 5500000,
-      gasPrice: 7000000000 // 7 gwei
+    hardhat: {
+      // This comes with 20 pre-funded accounts
+      // No real ETH needed
     },
-    polygon: {
-      url: `https://polygon-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      gas: 5500000,
-      gasPrice: 40000000000 // 40 gwei
+    localhost: {
+      url: "http://127.0.0.1:8545"
     }
   },
   paths: {
@@ -26,5 +19,5 @@ module.exports = {
     tests: "./test",
     cache: "./cache",
     artifacts: "./artifacts"
-  },
+  }
 };

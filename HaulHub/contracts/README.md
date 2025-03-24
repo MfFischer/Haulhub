@@ -112,4 +112,4 @@ The contracts include:
 
 ## License
 
-MIT
+MITnpm install --legacy-peer-deps
