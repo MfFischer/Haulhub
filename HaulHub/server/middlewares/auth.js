@@ -6,8 +6,29 @@ require('dotenv').config();
  * Verifies JWT token in Authorization header and adds user data to request
  */
 module.exports = function(req, res, next) {
+  // Skip auth in development mode if enabled
+  if (process.env.NODE_ENV === 'development' && 
+      process.env.SKIP_AUTH_FOR_DEV === 'true') {
+    console.log('Development mode: Auth check bypassed');
+    
+    // Add mock user to request
+    req.user = {
+      id: 'user-dev-1',
+      name: 'Test Hauler',
+      email: 'hauler@example.com',
+      userType: 'hauler',
+    };
+    
+    return next();
+  }
+  
   // Get token from header
-  const token = req.header('Authorization')?.replace('Bearer ', '');
+  let token = req.header('Authorization');
+  
+  // Remove Bearer prefix if present
+  if (token && token.startsWith('Bearer ')) {
+    token = token.substring(7);
+  }
   
   // Check if no token
   if (!token) {

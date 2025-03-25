@@ -19,9 +19,13 @@ const Login = () => {
   // Get return URL from location state or default to home
   const returnUrl = location.state?.returnUrl || '/';
   
+  // Check if we're in development mode
+  const isDev = process.env.NODE_ENV === 'development';
+  
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
+      console.log('User already authenticated, redirecting to:', returnUrl);
       navigate(returnUrl);
     }
   }, [isAuthenticated, isLoading, navigate, returnUrl]);
@@ -72,11 +76,13 @@ const Login = () => {
     }
     
     setIsSubmitting(true);
+    console.log('Attempting login with:', formData.email);
     
     try {
       const success = await login(formData.email, formData.password);
       
       if (success) {
+        console.log('Login successful, redirecting to:', returnUrl);
         navigate(returnUrl);
       } else {
         setErrors({
@@ -84,12 +90,33 @@ const Login = () => {
         });
       }
     } catch (error) {
+      console.error('Login error:', error);
       setErrors({
         general: error.message || 'An error occurred. Please try again.',
       });
     } finally {
       setIsSubmitting(false);
     }
+  };
+  
+  // Quick login with test account (development only)
+  const handleQuickLogin = (type) => {
+    const testCredentials = {
+      hauler: { email: 'hauler@example.com', password: 'password123' },
+      poster: { email: 'poster@example.com', password: 'password123' }
+    };
+    
+    setFormData({
+      ...formData,
+      email: testCredentials[type].email,
+      password: testCredentials[type].password
+    });
+    
+    // Auto-submit after a short delay
+    setTimeout(() => {
+      const submitButton = document.querySelector('button[type="submit"]');
+      if (submitButton) submitButton.click();
+    }, 500);
   };
   
   // Show loading state while checking authentication
@@ -129,6 +156,29 @@ const Login = () => {
                 <div className="ml-3">
                   <p className="text-sm text-red-700">{errors.general}</p>
                 </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Dev mode quick login buttons */}
+          {isDev && (
+            <div className="mb-6 bg-blue-50 p-4 rounded-md">
+              <h3 className="text-sm font-medium text-blue-800 mb-2">Development Mode</h3>
+              <div className="flex space-x-3">
+                <button
+                  type="button"
+                  onClick={() => handleQuickLogin('hauler')}
+                  className="inline-flex items-center px-3 py-1.5 border border-blue-300 text-xs font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Log in as Hauler
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickLogin('poster')}
+                  className="inline-flex items-center px-3 py-1.5 border border-blue-300 text-xs font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Log in as Poster
+                </button>
               </div>
             </div>
           )}

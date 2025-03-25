@@ -7,13 +7,68 @@ const auth = require('../middlewares/auth');
 const userLocations = [];
 const activeHaulers = [];
 
+// Development environment check
+const isDev = process.env.NODE_ENV === 'development';
+
+// Helper middleware that bypasses auth in development mode
+const conditionalAuth = (req, res, next) => {
+  if (isDev) {
+    // Skip auth in development
+    req.user = { id: 'dev-user-id', userType: 'hauler' }; // Mock user
+    return next();
+  }
+  // Use real auth in production
+  return auth(req, res, next);
+};
+
+/**
+ * @route   GET api/location/region
+ * @desc    Get region information by coordinates
+ * @access  Public in dev, Private in prod
+ */
+router.get('/region', conditionalAuth, 
+  [
+    check('lat', 'Latitude is required').isFloat({ min: -90, max: 90 }),
+    check('lng', 'Longitude is required').isFloat({ min: -180, max: 180 }),
+  ], 
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      const { lat, lng } = req.query;
+      
+      // Return mock region data
+      res.json({
+        success: true,
+        region: {
+          id: 'region-' + Math.floor(lat) + '-' + Math.floor(lng),
+          name: `Region ${Math.floor(lat)}°N, ${Math.floor(lng)}°E`,
+          country: 'United States',
+          isActive: true,
+          serviceAvailable: true,
+          pricing: {
+            baseRate: 10.99,
+            perKm: 1.25,
+            perMinute: 0.30
+          }
+        }
+      });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server error');
+    }
+});
+
 /**
  * @route   POST api/location/update
  * @desc    Update user's current location
  * @access  Private
  */
 router.post('/update', [
-  auth,
+  conditionalAuth,
   check('latitude', 'Latitude is required').isFloat({ min: -90, max: 90 }),
   check('longitude', 'Longitude is required').isFloat({ min: -180, max: 180 }),
   check('accuracy', 'Accuracy is required').optional().isFloat({ min: 0 }),
@@ -93,7 +148,7 @@ router.post('/update', [
  * @access  Private (haulers only)
  */
 router.post('/availability', [
-  auth,
+  conditionalAuth,
   check('isAvailable', 'Availability status is required').isBoolean(),
 ], (req, res) => {
   const errors = validationResult(req);
@@ -139,7 +194,7 @@ router.post('/availability', [
  * @access  Private
  */
 router.get('/nearby-haulers', [
-  auth,
+  conditionalAuth,
   check('latitude', 'Latitude is required').isFloat({ min: -90, max: 90 }),
   check('longitude', 'Longitude is required').isFloat({ min: -180, max: 180 }),
   check('radius', 'Radius must be a positive number').optional().isFloat({ min: 0.1 }),
@@ -201,7 +256,7 @@ router.get('/nearby-haulers', [
  * @access  Private
  */
 router.get('/job-route', [
-  auth,
+  conditionalAuth,
   check('pickupLat', 'Pickup latitude is required').isFloat({ min: -90, max: 90 }),
   check('pickupLng', 'Pickup longitude is required').isFloat({ min: -180, max: 180 }),
   check('dropoffLat', 'Dropoff latitude is required').isFloat({ min: -90, max: 90 }),
@@ -257,7 +312,7 @@ router.get('/job-route', [
  * @access  Private
  */
 router.get('/geocode', [
-  auth,
+  conditionalAuth,
   check('address', 'Address is required').not().isEmpty(),
 ], (req, res) => {
   const errors = validationResult(req);
@@ -306,7 +361,7 @@ router.get('/geocode', [
  * @access  Private
  */
 router.get('/reverse-geocode', [
-  auth,
+  conditionalAuth,  // Changed from auth to conditionalAuth
   check('latitude', 'Latitude is required').isFloat({ min: -90, max: 90 }),
   check('longitude', 'Longitude is required').isFloat({ min: -180, max: 180 }),
 ], (req, res) => {

@@ -3,14 +3,15 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import LocationContext from '../../context/LocationContext';
 
-// Set Mapbox access token
-mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
+// Set Mapbox access token - fix the variable name to match your .env file
+mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_API_KEY;
 
-const MapView = ({ jobs, activeJobId, onJobSelect, onJobAccept }) => {
+const MapView = ({ jobs = [], activeJobId, onJobSelect = () => {}, onJobAccept = () => {} }) => {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const markersRef = useRef({});
   const [isMapInitialized, setIsMapInitialized] = useState(false);
+  const [mapError, setMapError] = useState(false);
   
   const { currentLocation, locationPermission, requestLocationPermission } = useContext(LocationContext);
   
@@ -18,37 +19,49 @@ const MapView = ({ jobs, activeJobId, onJobSelect, onJobAccept }) => {
   useEffect(() => {
     if (map.current) return; // Map already initialized
     
-    // Create map instance
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v11',
-      center: currentLocation 
-        ? [currentLocation.longitude, currentLocation.latitude] 
-        : [-74.5, 40], // Default center (NYC area)
-      zoom: 10
-    });
-    
-    // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-    
-    // Add geolocation control if location permission not granted
-    if (locationPermission !== 'granted') {
-      map.current.addControl(
-        new mapboxgl.GeolocateControl({
-          positionOptions: {
-            enableHighAccuracy: true
-          },
-          trackUserLocation: true,
-          showUserHeading: true
-        }),
-        'top-right'
-      );
+    // Check if token is available
+    if (!mapboxgl.accessToken) {
+      console.error("Mapbox token is missing. Please add REACT_APP_MAPBOX_API_KEY to your .env file.");
+      setMapError(true);
+      return;
     }
     
-    // Handle map load complete
-    map.current.on('load', () => {
-      setIsMapInitialized(true);
-    });
+    try {
+      // Create map instance
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: currentLocation 
+          ? [currentLocation.longitude, currentLocation.latitude] 
+          : [-74.5, 40], // Default center (NYC area)
+        zoom: 10
+      });
+      
+      // Add navigation controls
+      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      
+      // Add geolocation control if location permission not granted
+      if (locationPermission !== 'granted') {
+        map.current.addControl(
+          new mapboxgl.GeolocateControl({
+            positionOptions: {
+              enableHighAccuracy: true
+            },
+            trackUserLocation: true,
+            showUserHeading: true
+          }),
+          'top-right'
+        );
+      }
+      
+      // Handle map load complete
+      map.current.on('load', () => {
+        setIsMapInitialized(true);
+      });
+    } catch (error) {
+      console.error("Error initializing map:", error);
+      setMapError(true);
+    }
     
     // Cleanup on unmount
     return () => {
@@ -62,7 +75,7 @@ const MapView = ({ jobs, activeJobId, onJobSelect, onJobAccept }) => {
   
   // Update map center when location changes
   useEffect(() => {
-    if (!map.current || !currentLocation) return;
+    if (!map.current || !currentLocation || mapError) return;
     
     map.current.flyTo({
       center: [currentLocation.longitude, currentLocation.latitude],
@@ -104,11 +117,11 @@ const MapView = ({ jobs, activeJobId, onJobSelect, onJobAccept }) => {
       markersRef.current.userLocation
         .setLngLat([currentLocation.longitude, currentLocation.latitude]);
     }
-  }, [currentLocation]);
+  }, [currentLocation, mapError]);
   
   // Update job markers when jobs change
   useEffect(() => {
-    if (!map.current || !isMapInitialized || !jobs.length) return;
+    if (!map.current || !isMapInitialized || !jobs.length || mapError) return;
     
     // Get current marker IDs
     const currentMarkerIds = Object.keys(markersRef.current).filter(id => id !== 'userLocation');
@@ -153,7 +166,7 @@ const MapView = ({ jobs, activeJobId, onJobSelect, onJobAccept }) => {
         el.style.cursor = 'pointer';
         el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
         el.style.border = '2px solid white';
-        el.innerHTML = `${job.price.currencySymbol}${Math.round(job.price.amount)}`;
+        el.innerHTML = `${job.price?.currencySymbol || '$'}${Math.round(job.price?.amount || 0)}`;
         
         // Create popup
         const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
@@ -227,7 +240,7 @@ const MapView = ({ jobs, activeJobId, onJobSelect, onJobAccept }) => {
         }
       }
     });
-  }, [jobs, activeJobId, isMapInitialized, onJobSelect, onJobAccept]);
+  }, [jobs, activeJobId, isMapInitialized, onJobSelect, onJobAccept, mapError]);
   
   // Handle location permission request
   const handleRequestLocation = async () => {
@@ -236,6 +249,23 @@ const MapView = ({ jobs, activeJobId, onJobSelect, onJobAccept }) => {
       alert('Location permission is required for best experience. Please enable location services.');
     }
   };
+  
+  // If there's a map error, show a fallback UI
+  if (mapError) {
+    return (
+      <div className="h-full w-full flex items-center justify-center bg-gray-200 rounded-lg">
+        <div className="text-center p-6 bg-white rounded-lg shadow-lg max-w-md">
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">Map display unavailable</h3>
+          <p className="text-gray-600 mb-4">
+            Unable to load the map. Please check your Mapbox API key in the .env file.
+          </p>
+          <p className="text-sm text-gray-500">
+            Make sure REACT_APP_MAPBOX_API_KEY is properly set in your .env.development file.
+          </p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="relative h-full">

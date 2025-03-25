@@ -7,7 +7,6 @@ import api from './api';
  */
 export const detectUserRegion = async (coordinates = null) => {
   try {
-    // If coordinates are provided, use reverse geocoding
     if (coordinates) {
       const response = await api.get('/location/region', {
         params: {
@@ -15,51 +14,14 @@ export const detectUserRegion = async (coordinates = null) => {
           lng: coordinates.longitude
         }
       });
-      
       return response.data.region;
     }
     
-    // Otherwise use IP geolocation
     const response = await api.get('/location/region');
     return response.data.region;
   } catch (error) {
-    console.error('Region detection error:', error);
-    
-    // Fallback to browser locale if API fails
-    try {
-      const locale = navigator.language || navigator.userLanguage;
-      const country = locale.split('-')[1]?.toLowerCase();
-      
-      // Map country codes to our region codes
-      const regionMap = {
-        'us': 'us',
-        'ph': 'ph',
-        'id': 'id',
-        'vn': 'vn',
-        'gb': 'uk',
-        'ca': 'ca',
-        // EU countries
-        'de': 'eu',
-        'fr': 'eu',
-        'it': 'eu',
-        'es': 'eu',
-        'nl': 'eu',
-        'be': 'eu',
-        'at': 'eu',
-        'pt': 'eu',
-        'ie': 'eu',
-        'fi': 'eu',
-        'gr': 'eu'
-      };
-      
-      if (regionMap[country]) {
-        return regionMap[country];
-      }
-    } catch (localeError) {
-      console.error('Locale detection error:', localeError);
-    }
-    
-    // Default to US if all else fails
+    console.warn('Region detection error:', error);
+    // Return default region instead of throwing
     return 'us';
   }
 };
@@ -93,11 +55,11 @@ export const reverseGeocode = async (lat, lng) => {
     const response = await api.get('/location/reverse-geocode', {
       params: { lat, lng }
     });
-    
     return response.data;
   } catch (error) {
-    console.error('Reverse geocoding error:', error);
-    throw new Error('Failed to get address from coordinates');
+    console.warn('Reverse geocoding error:', error);
+    // Return null instead of throwing
+    return null;
   }
 };
 
