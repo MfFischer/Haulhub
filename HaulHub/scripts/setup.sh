@@ -92,7 +92,7 @@ fi
 # Server environment
 if [ ! -f "./server/.env" ]; then
     echo -e "${YELLOW}Creating server .env file...${NC}"
-    cp ./server/.env.example ./server/.env || echo "PORT=3001" > ./server/.env
+    cp ./server/.env.example ./server/.env || echo "PORT=5001" > ./server/.env
     echo -e "${GREEN}Created server .env file. Please update it with your configuration.${NC}"
 else
     echo -e "${GREEN}Server .env file already exists.${NC}"

@@ -1,4 +1,4 @@
-const ethers = require('ethers');
+const { ethers } = require('ethers');
 const Transaction = require('../models/Transaction');
 const User = require('../models/User');
 const Job = require('../models/Job');
@@ -29,8 +29,8 @@ let badgeNFTContract;
  */
 const initBlockchainService = async () => {
   try {
-    // Initialize provider
-    provider = new ethers.providers.JsonRpcProvider(PROVIDER_URL);
+    // Initialize provider using ethers v6 syntax
+    provider = new ethers.JsonRpcProvider(PROVIDER_URL);
     
     // Initialize wallet for signed transactions (optional)
     const adminPrivateKey = process.env.ADMIN_PRIVATE_KEY;

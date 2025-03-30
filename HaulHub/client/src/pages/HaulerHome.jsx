@@ -7,7 +7,7 @@ import Loading from '../components/common/Loading';
 import AuthContext from '../context/AuthContext';
 import LocationContext from '../context/LocationContext';
 import WalletContext from '../context/WalletContext';
-import api, { jobsAPI } from '../utils/api';
+import api from '../utils/api';
 
 const HaulerHome = () => {
   const [jobs, setJobs] = useState([]);
@@ -16,6 +16,7 @@ const HaulerHome = () => {
   const [activeJobId, setActiveJobId] = useState(null);
   const [viewMode, setViewMode] = useState('map'); // 'map' or 'list'
   const [filterMode, setFilterMode] = useState('nearest'); // 'nearest', 'price', 'weight'
+  const [apiError, setApiError] = useState(false);
   
   const { currentUser } = useContext(AuthContext);
   const { currentLocation, getDistance } = useContext(LocationContext);
@@ -23,22 +24,42 @@ const HaulerHome = () => {
   
   const navigate = useNavigate();
   
+  // Log current location for debugging
+  useEffect(() => {
+    console.log("Current location in HaulerHome:", currentLocation);
+  }, [currentLocation]);
+  
   // Fetch available jobs
   const fetchJobs = useCallback(async () => {
     setIsLoading(true);
+    setApiError(false);
+    
     try {
-      // If we have location, include it for better job recommendations
-      const lat = currentLocation ? currentLocation.latitude : null;
-      const lng = currentLocation ? currentLocation.longitude : null;
+      // Default coordinates in case location is not available
+      const defaultLat = 40.7128; // New York City
+      const defaultLng = -74.0060;
       
-      // Use the jobsAPI helper - make sure lat/lng are numbers and not null
-      const response = await jobsAPI.getAvailable(
-        lat || undefined, 
-        lng || undefined
-      );
+      // If we have location, include it for better job recommendations
+      const lat = currentLocation?.latitude || defaultLat;
+      const lng = currentLocation?.longitude || defaultLng;
+      
+      console.log("Fetching jobs with coordinates:", { lat, lng });
+      
+      // Add a timeout to the API call to avoid hanging forever
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      // Make direct API call instead of using helper
+      const response = await api.get('/jobs/available', {
+        params: { lat, lng },
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
       
       // Ensure response.data is an array
       const jobsData = Array.isArray(response.data) ? response.data : [];
+      console.log("Jobs data received:", jobsData);
       
       // Calculate distance for each job if we have location
       const jobsWithDistance = jobsData.map(job => {
@@ -64,8 +85,57 @@ const HaulerHome = () => {
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching jobs:', error);
-      toast.error('Failed to fetch available jobs');
-      setJobs([]); // Set empty array on error
+      
+      // Only show a toast error if it's not an abort error (timeout)
+      if (error.name !== 'AbortError') {
+        toast.error('Failed to fetch available jobs. Server may be offline.');
+      }
+      
+      setApiError(true);
+      
+      // Add some sample job data for testing if no real data is available
+      if (process.env.NODE_ENV === 'development') {
+        // Mock data for development
+        setJobs([
+          {
+            id: 'mock-job-1',
+            title: 'Furniture Delivery',
+            price: { amount: 45.00, currencySymbol: '$' },
+            weight: 30,
+            weightUnit: 'kg',
+            distance: 3.5,
+            distanceUnit: 'mi',
+            isRush: false,
+            vehicleType: 'Van',
+            pickup: '123 Main St',
+            dropoff: '456 Elm St',
+            description: 'Deliver a sofa to customer location',
+            postedAt: new Date().toISOString(),
+            pickupCoordinates: { lat: 50.374, lng: 8.735 },
+            dropoffCoordinates: { lat: 50.394, lng: 8.755 }
+          },
+          {
+            id: 'mock-job-2',
+            title: 'Urgent Package',
+            price: { amount: 35.00, currencySymbol: '$' },
+            weight: 5,
+            weightUnit: 'kg',
+            distance: 2.1,
+            distanceUnit: 'mi',
+            isRush: true,
+            vehicleType: 'Car',
+            pickup: '789 Oak St',
+            dropoff: '101 Pine St',
+            description: 'Deliver a package ASAP',
+            postedAt: new Date().toISOString(),
+            pickupCoordinates: { lat: 50.384, lng: 8.705 },
+            dropoffCoordinates: { lat: 50.375, lng: 8.740 }
+          }
+        ]);
+      } else {
+        setJobs([]); // Set empty array on error in production
+      }
+      
       setIsLoading(false);
     }
   }, [currentLocation, getDistance]);
@@ -133,12 +203,17 @@ const HaulerHome = () => {
     try {
       // First try blockchain acceptance if applicable
       if (acceptJob) {
-        const onChainJob = await api.get(`/jobs/${jobId}/blockchain`);
-        if (onChainJob.data.onChain) {
-          const success = await acceptJob(onChainJob.data.chainJobId);
-          if (!success) {
-            throw new Error('Blockchain transaction failed');
+        try {
+          const onChainJob = await api.get(`/jobs/${jobId}/blockchain`);
+          if (onChainJob.data.onChain) {
+            const success = await acceptJob(onChainJob.data.chainJobId);
+            if (!success) {
+              throw new Error('Blockchain transaction failed');
+            }
           }
+        } catch (error) {
+          console.error('Error with blockchain processing:', error);
+          toast.warn('Could not process blockchain transaction. Continuing with regular job acceptance.');
         }
       }
       
@@ -147,10 +222,20 @@ const HaulerHome = () => {
       
       toast.success('Job accepted successfully!');
       fetchJobs(); // Refresh job list
-      navigate(`/jobs/${jobId}`); // Navigate to job details
+      navigate(`/job/${jobId}`); // Navigate to job details
     } catch (error) {
       console.error('Error accepting job:', error);
-      toast.error(error.response?.data?.message || 'Failed to accept job');
+      
+      if (error.response) {
+        // Server responded with an error (e.g. 400, 403, 500)
+        toast.error(error.response.data?.message || 'Failed to accept job');
+      } else if (error.request) {
+        // Server did not respond at all
+        toast.error('Could not connect to server. Please check your internet connection.');
+      } else {
+        // Something else went wrong
+        toast.error('An error occurred while accepting the job');
+      }
     }
   };
   
@@ -160,6 +245,24 @@ const HaulerHome = () => {
   
   return (
     <div className="flex flex-col h-full">
+      {/* API Error Banner (only show if there's an error and no jobs) */}
+      {apiError && jobs.length === 0 && (
+        <div className="bg-red-100 border-l-4 border-red-500 p-4 mb-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-700">
+                Unable to connect to server. Please check if the backend is running at <span className="font-mono">http://localhost:5001</span>.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* View toggle and filters */}
       <div className="p-4 bg-white shadow-sm z-10">
         <div className="flex justify-between items-center">
@@ -212,6 +315,23 @@ const HaulerHome = () => {
           />
         ) : (
           <div className="h-full overflow-y-auto p-4 bg-gray-100">
+            {apiError && filteredJobs.length > 0 && (
+              <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-4 rounded-lg">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-yellow-700">
+                      Unable to connect to server. Showing demo data for testing purposes.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {filteredJobs.length === 0 ? (
               <div className="bg-white rounded-lg p-8 text-center shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">

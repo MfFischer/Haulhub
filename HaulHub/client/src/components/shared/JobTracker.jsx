@@ -18,13 +18,29 @@ const JobTracker = ({ job, onStatusUpdate }) => {
   const markersRef = useRef({});
   const pollingInterval = useRef(null);
   
+  // Display address helper function to safely handle pickup/dropoff objects
+  const getAddressString = (locationObj) => {
+    if (!locationObj) return 'Address not available';
+    if (typeof locationObj === 'string') return locationObj;
+    return locationObj.address || 'Address not available';
+  };
+  
   // Initialize map
   useEffect(() => {
     if (map.current) return; // Map already initialized
+
+    // Add this check
+  //const hasPickupCoords = job.pickupCoordinates && job.pickupCoordinates.lat && job.pickupCoordinates.lng;
+  //const hasDropoffCoords = job.dropoffCoordinates && job.dropoffCoordinates.lat && job.dropoffCoordinates.lng;
     
-    if (!job.pickupCoordinates || !job.dropoffCoordinates) {
-      return; // No coordinates to display
-    }
+  //if (!hasPickupCoords || !hasDropoffCoords) {
+    //console.warn('Missing coordinates for map visualization');
+   // return; // No coordinates to display
+ // }
+
+ if (!job.pickupCoordinates || !job.dropoffCoordinates) {
+  return;
+}
     
     // Create map instance
     map.current = new mapboxgl.Map({
@@ -51,7 +67,9 @@ const JobTracker = ({ job, onStatusUpdate }) => {
       
       markersRef.current.pickup = new mapboxgl.Marker(pickupEl)
         .setLngLat([job.pickupCoordinates.lng, job.pickupCoordinates.lat])
-        .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`<p>Pickup: ${job.pickup}</p>`))
+        .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(
+          `<p>Pickup: ${getAddressString(job.pickup)}</p>`
+        ))
         .addTo(map.current);
       
       // Add dropoff marker
@@ -66,7 +84,9 @@ const JobTracker = ({ job, onStatusUpdate }) => {
       
       markersRef.current.dropoff = new mapboxgl.Marker(dropoffEl)
         .setLngLat([job.dropoffCoordinates.lng, job.dropoffCoordinates.lat])
-        .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`<p>Dropoff: ${job.dropoff}</p>`))
+        .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(
+          `<p>Dropoff: ${getAddressString(job.dropoff)}</p>`
+        ))
         .addTo(map.current);
       
       // Fit map to bounds that include both markers
@@ -458,11 +478,11 @@ const JobTracker = ({ job, onStatusUpdate }) => {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <h4 className="text-xs font-medium text-gray-500">Pickup</h4>
-            <p className="text-sm text-gray-800">{job.pickup}</p>
+            <p className="text-sm text-gray-800">{getAddressString(job.pickup)}</p>
           </div>
           <div>
             <h4 className="text-xs font-medium text-gray-500">Dropoff</h4>
-            <p className="text-sm text-gray-800">{job.dropoff}</p>
+            <p className="text-sm text-gray-800">{getAddressString(job.dropoff)}</p>
           </div>
         </div>
         
@@ -470,7 +490,7 @@ const JobTracker = ({ job, onStatusUpdate }) => {
       </div>
       
       {/* Styles for pulse animation */}
-      <style jsx>{`
+      <style>{`
         @keyframes pulse {
           0% {
             transform: scale(0.5);

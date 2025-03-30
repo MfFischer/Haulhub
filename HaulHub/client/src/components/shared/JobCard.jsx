@@ -16,6 +16,21 @@ const JobCard = ({ job, isActive, onClick, onAccept }) => {
       return 'recently';
     }
   };
+
+  // Helper function to safely get address string
+  const getAddressString = (locationObj) => {
+    if (!locationObj) return 'Address not available';
+    if (typeof locationObj === 'string') return locationObj;
+    return locationObj.address || 'Address not available';
+  };
+  
+  // Helper function to safely handle price display
+  const formatPrice = () => {
+    if (!job.price) return '$0.00';
+    const symbol = job.price.currencySymbol || '$';
+    const amount = typeof job.price.amount === 'number' ? job.price.amount.toFixed(2) : '0.00';
+    return `${symbol}${amount}`;
+  };
   
   // Get appropriate icons based on job properties
   const getJobIcon = () => {
@@ -39,6 +54,15 @@ const JobCard = ({ job, isActive, onClick, onAccept }) => {
     );
   };
   
+  // Add defensive checks for missing data
+  if (!job) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm p-4">
+        <p className="text-red-500">Error: Invalid job data</p>
+      </div>
+    );
+  }
+  
   return (
     <div
       className={`bg-white rounded-lg shadow-sm transition-all ${
@@ -53,17 +77,17 @@ const JobCard = ({ job, isActive, onClick, onAccept }) => {
           {getJobIcon()}
           
           <div className="ml-3 flex-grow">
-            <h3 className="text-lg font-medium text-gray-900">{job.title}</h3>
+            <h3 className="text-lg font-medium text-gray-900">{job.title || 'Untitled Job'}</h3>
             <p className="text-sm text-gray-500">
-              Posted {formatCreatedAt(job.createdAt)}
+              Posted {formatCreatedAt(job.postedAt || job.createdAt || new Date())}
             </p>
           </div>
           
           <div className="text-right">
             <div className="text-lg font-semibold text-green-600">
-              {job.price.currencySymbol}{job.price.amount.toFixed(2)}
+              {formatPrice()}
             </div>
-            <div className="text-xs text-gray-500">{job.price.cryptoPrice} USDC</div>
+            <div className="text-xs text-gray-500">{job.price?.cryptoPrice || 'N/A'} USDC</div>
           </div>
         </div>
         
@@ -71,13 +95,13 @@ const JobCard = ({ job, isActive, onClick, onAccept }) => {
           <div className="bg-gray-50 p-2 rounded">
             <div className="text-gray-500">Distance</div>
             <div className="font-medium">
-              {job.distance ? `${job.distance.toFixed(1)} ${job.distanceUnit}` : 'Unknown'}
+              {job.distance ? `${job.distance.toFixed(1)} ${job.distanceUnit || 'mi'}` : 'Unknown'}
             </div>
           </div>
           
           <div className="bg-gray-50 p-2 rounded">
             <div className="text-gray-500">Weight</div>
-            <div className="font-medium">{job.weight} {job.weightUnit}</div>
+            <div className="font-medium">{job.weight || 'N/A'} {job.weightUnit || 'kg'}</div>
           </div>
           
           <div className="bg-gray-50 p-2 rounded">
@@ -97,7 +121,7 @@ const JobCard = ({ job, isActive, onClick, onAccept }) => {
             </div>
             <div className="ml-2 text-sm">
               <div className="text-gray-500">Pickup</div>
-              <div className="font-medium">{job.pickup}</div>
+              <div className="font-medium"><p>{getAddressString(job.pickup)}</p></div>
             </div>
           </div>
           
@@ -110,7 +134,7 @@ const JobCard = ({ job, isActive, onClick, onAccept }) => {
             </div>
             <div className="ml-2 text-sm">
               <div className="text-gray-500">Dropoff</div>
-              <div className="font-medium">{job.dropoff}</div>
+              <div className="font-medium">{getAddressString(job.dropoff)}</div>
             </div>
           </div>
         </div>

@@ -48,6 +48,8 @@ app.use(helmet()); // Security headers
 // CORS configuration
 app.use(cors({
   origin: 'http://localhost:3000', // Your React app's URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
 
@@ -94,6 +96,14 @@ app.use(notFound);
 
 // Error handling middleware
 app.use(errorHandler);
+
+// Add error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Internal Server Error' });
+});
+
+app.use('/api/test', require('./api/test-routes'));
 
 // Start server
 const PORT = process.env.PORT || 5001;

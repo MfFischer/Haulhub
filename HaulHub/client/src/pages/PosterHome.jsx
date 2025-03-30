@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 import PricingCalculator from '../components/PricingCalculator';
 import JobTracker from '../components/shared/JobTracker';
 import Loading from '../components/common/Loading';
 import AuthContext from '../context/AuthContext';
-import api from '../utils/api';
+
+const API_BASE_URL = 'http://localhost:5001/api';
 
 const PosterHome = () => {
   const [activeJobs, setActiveJobs] = useState([]);
@@ -19,7 +21,16 @@ const PosterHome = () => {
   const fetchActiveJobs = async () => {
     try {
       setIsLoading(true);
-      const response = await api.get('/jobs/poster/active');
+      // Get auth token from localStorage
+      const token = localStorage.getItem('token');
+      
+      // Create headers with token if available
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await axios.get(`${API_BASE_URL}/jobs/poster/active`, { headers });
       setActiveJobs(response.data);
       
       // If there's an active job, select it by default

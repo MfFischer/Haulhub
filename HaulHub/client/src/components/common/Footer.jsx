@@ -1,9 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const Footer = () => {
+const Footer = ({ isMobile }) => {
   return (
-    <footer className="bg-gray-800 text-white">
+    <footer className="footer p-10 bg-neutral text-neutral-content">
+      <div>
+        <span className="footer-title">Services</span>
+        <button className="link link-hover">Hauling</button>
+        <button className="link link-hover">Delivery</button>
+        <button className="link link-hover">Tracking</button>
+      </div>
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Logo and description */}
@@ -47,17 +53,17 @@ const Footer = () => {
             </h3>
             <ul className="mt-4 space-y-3">
               <li>
-                <Link to="/hauler" className="text-gray-400 hover:text-white text-sm">
+                <Link to="/hauler-home" className="text-gray-400 hover:text-white text-sm">
                   Find Jobs
                 </Link>
               </li>
               <li>
-                <Link to="/poster" className="text-gray-400 hover:text-white text-sm">
+                <Link to="/poster-home" className="text-gray-400 hover:text-white text-sm">
                   Request a Haul
                 </Link>
               </li>
               <li>
-                <Link to="/jobs" className="text-gray-400 hover:text-white text-sm">
+                <Link to="/my-jobs" className="text-gray-400 hover:text-white text-sm">
                   My Jobs
                 </Link>
               </li>

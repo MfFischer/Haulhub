@@ -16,6 +16,7 @@ export const WalletProvider = ({ children }) => {
   const [chainId, setChainId] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
   const [balance, setBalance] = useState({
     eth: '0',
     usdc: '0',
@@ -175,73 +176,46 @@ export const WalletProvider = ({ children }) => {
   }, [usdcAddress]);
 
   // Connect wallet
-  const connectWallet = useCallback(async () => {
-    if (!window.ethereum) {
-      toast.error('Please install MetaMask to use this feature');
-      return false;
-    }
-    
-    setIsLoading(true);
-    
+  const connectWallet = async () => {
     try {
-      const ethProvider = new ethers.providers.Web3Provider(window.ethereum);
-      
-      // Request account access
+      if (!window.ethereum) {
+        throw new Error('MetaMask is not installed');
+      }
+
+      setIsConnecting(true);
       const accounts = await window.ethereum.request({
         method: 'eth_requestAccounts'
       });
-      
-      if (accounts.length === 0) {
-        toast.error('No accounts found. Please connect to MetaMask');
-        return false;
+
+      if (accounts.length > 0) {
+        setAccount(accounts[0]);
+        
+        if (provider) {
+          const ethSigner = provider.getSigner();
+          setSigner(ethSigner);
+          setIsConnected(true);
+          
+          // Initialize contracts
+          if (haulHubAddress && badgeAddress) {
+            initializeContracts(provider, ethSigner);
+          }
+          
+          // Update balances
+          updateBalances(accounts[0], provider);
+        }
       }
-      
-      const account = accounts[0];
-      setAccount(account);
-      
-      // Get the network
-      const network = await ethProvider.getNetwork();
-      setChainId(network.chainId);
-      
-      // Check if on the correct network
-      if (network.chainId !== requiredChainId) {
-        const switched = await switchToRequiredNetwork();
-        if (!switched) return false;
-      }
-      
-      // Setup provider and signer
-      setProvider(ethProvider);
-      const ethSigner = ethProvider.getSigner();
-      setSigner(ethSigner);
-      
-      // Initialize contracts
-      if (haulHubAddress && badgeAddress) {
-        initializeContracts(ethProvider, ethSigner);
-      }
-      
-      // Update balances
-      updateBalances(account, ethProvider);
-      
-      setIsConnected(true);
-      toast.success('Wallet connected successfully');
-      
-      // Register wallet with backend
-      try {
-        await api.post('/users/wallet', { address: account });
-      } catch (apiError) {
-        console.error('Error registering wallet with backend:', apiError);
-      }
-      
-      return true;
     } catch (error) {
-      console.error('Connect wallet error:', error);
-      const errorMessage = error.message || 'Failed to connect wallet';
-      toast.error(errorMessage);
-      return false;
+      // Handle user rejection gracefully
+      if (error.code === 4001) {
+        console.log('User declined to connect wallet');
+        // Optionally show a user-friendly message
+      } else {
+        console.error('Connect wallet error:', error);
+      }
     } finally {
-      setIsLoading(false);
+      setIsConnecting(false);
     }
-  }, [requiredChainId, haulHubAddress, badgeAddress, initializeContracts, updateBalances]);
+  };
 
   // Disconnect wallet
   const disconnectWallet = useCallback(() => {
@@ -476,6 +450,7 @@ export const WalletProvider = ({ children }) => {
         chainId,
         isConnected,
         isLoading,
+        isConnecting,
         balance,
         haulHubContract,
         badgeContract,

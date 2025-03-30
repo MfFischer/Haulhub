@@ -56,10 +56,10 @@ const Header = () => {
           <nav className="hidden md:flex space-x-6 items-center">
             {isAuthenticated ? (
               <>
-                <Link to={userRole === 'hauler' ? '/hauler' : '/poster'} className="hover:text-green-200 transition-colors">
+                <Link to={userRole === 'hauler' ? '/hauler-home' : '/poster-home'} className="hover:text-green-200 transition-colors">
                   {userRole === 'hauler' ? 'Find Jobs' : 'Request Haul'}
                 </Link>
-                <Link to="/jobs" className="hover:text-green-200 transition-colors">My Jobs</Link>
+                <Link to="/my-jobs" className="hover:text-green-200 transition-colors">My Jobs</Link>
                 <Link to="/wallet" className="hover:text-green-200 transition-colors">Wallet</Link>
                 <div className="relative group">
                   <button className="flex items-center space-x-1 hover:text-green-200 transition-colors">
@@ -118,10 +118,10 @@ const Header = () => {
             <nav className="flex flex-col space-y-3">
               {isAuthenticated ? (
                 <>
-                  <Link to={userRole === 'hauler' ? '/hauler' : '/poster'} className="hover:text-green-200 transition-colors" onClick={closeMenu}>
+                  <Link to={userRole === 'hauler' ? '/hauler-home' : '/poster-home'} className="hover:text-green-200 transition-colors" onClick={closeMenu}>
                     {userRole === 'hauler' ? 'Find Jobs' : 'Request Haul'}
                   </Link>
-                  <Link to="/jobs" className="hover:text-green-200 transition-colors" onClick={closeMenu}>My Jobs</Link>
+                  <Link to="/my-jobs" className="hover:text-green-200 transition-colors" onClick={closeMenu}>My Jobs</Link>
                   <Link to="/wallet" className="hover:text-green-200 transition-colors" onClick={closeMenu}>Wallet</Link>
                   <Link to="/profile" className="hover:text-green-200 transition-colors" onClick={closeMenu}>Profile</Link>
                   
