@@ -23,7 +23,7 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
-      - PORT=3001
+      - PORT=5001
       - MONGO_URI=${MONGO_URI}
       - JWT_SECRET=${JWT_SECRET}
       - HAULHUB_CONTRACT_ADDRESS=${HAULHUB_CONTRACT_ADDRESS}
@@ -31,7 +31,7 @@ services:
       - POLYGON_MAINNET_RPC_URL=${POLYGON_MAINNET_RPC_URL}
       - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
     ports:
-      - "3001:3001"
+      - "5001:5001"
     depends_on:
       - mongodb
 

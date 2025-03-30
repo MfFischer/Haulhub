@@ -1,219 +1,225 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext';
-import { validateRegistration } from '../../utils/validation';
+import { Link, useNavigate } from 'react-router-dom';
+import { FiUser, FiMail, FiLock } from 'react-icons/fi';
+import AuthContext from '../../context/AuthContext';
+import { authAPI } from '../../utils/api'; // Import from updated API
 
 const RegisterForm = () => {
-  const navigate = useNavigate();
-  const { register } = useContext(AuthContext);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [userType, setUserType] = useState('hauler');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    userType: 'hauler', // Default role: hauler or poster
-    phoneNumber: '',
-    agreeToTerms: false
-  });
-
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value
-    });
-    
-    // Clear the error for this field when user starts typing
-    if (errors[name]) {
-      setErrors({
-        ...errors,
-        [name]: null
-      });
-    }
-  };
-
+  const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
     
-    // Validate the form inputs
-    const validationErrors = validateRegistration(formData);
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
+    // Validate passwords match
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
       return;
     }
     
-    setIsSubmitting(true);
-    
-    // Attempt to register the user
-    const success = await register(formData);
-    
-    setIsSubmitting(false);
-    
-    if (success) {
-      // Redirect to the appropriate home page based on user type
-      navigate(formData.userType === 'hauler' ? '/hauler-home' : '/poster-home');
+    try {
+      console.log('Attempting registration with:', { name, email, password, userType });
+      
+      // Call register API
+      const response = await authAPI.register({
+        name,
+        email,
+        password,
+        userType
+      });
+      console.log('Registration response:', response.data);
+      
+      // Update auth context with token and user data
+      login(response.data.token, response.data.user);
+      
+      // Redirect to home or appropriate dashboard
+      navigate(userType === 'hauler' ? '/hauler-home' : '/poster-home');
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError(
+        err.response?.data?.message || 
+        'Failed to register. Please try again with a different email.'
+      );
+    } finally {
+      setLoading(false);
     }
   };
-
+  
   return (
-    <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-center">Join HaulHub</h2>
+    <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
+        Create Your HaulHub Account
+      </h2>
       
-      {errors.general && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-          {errors.general}
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 text-red-500 rounded-md text-sm">
+          {error}
         </div>
       )}
       
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="fullName">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
             Full Name
           </label>
-          <input
-            id="fullName"
-            name="fullName"
-            type="text"
-            className={`shadow appearance-none border ${errors.fullName ? 'border-red-500' : 'border-gray-300'} rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
-            value={formData.fullName}
-            onChange={handleChange}
-            placeholder="John Doe"
-          />
-          {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FiUser className="text-gray-400" />
+            </div>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              className="pl-10 w-full py-2 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="John Doe"
+            />
+          </div>
         </div>
         
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
             Email Address
           </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            className={`shadow appearance-none border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="your@email.com"
-          />
-          {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FiMail className="text-gray-400" />
+            </div>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="pl-10 w-full py-2 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="you@example.com"
+            />
+          </div>
         </div>
         
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="phoneNumber">
-            Phone Number
-          </label>
-          <input
-            id="phoneNumber"
-            name="phoneNumber"
-            type="tel"
-            className={`shadow appearance-none border ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'} rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
-            value={formData.phoneNumber}
-            onChange={handleChange}
-            placeholder="(123) 456-7890"
-          />
-          {errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>}
-        </div>
-        
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
             Password
           </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            className={`shadow appearance-none border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="******************"
-          />
-          {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FiLock className="text-gray-400" />
+            </div>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="pl-10 w-full py-2 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="••••••••"
+            />
+          </div>
         </div>
         
-        <div className="mb-6">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="confirmPassword">
+        <div>
+          <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-1">
             Confirm Password
           </label>
-          <input
-            id="confirmPassword"
-            name="confirmPassword"
-            type="password"
-            className={`shadow appearance-none border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            placeholder="******************"
-          />
-          {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
-        </div>
-        
-        <div className="mb-6">
-          <label className="block text-gray-700 text-sm font-bold mb-2">I am a:</label>
-          <div className="flex space-x-4">
-            <label className="inline-flex items-center">
-              <input
-                type="radio"
-                name="userType"
-                value="hauler"
-                checked={formData.userType === 'hauler'}
-                onChange={handleChange}
-                className="form-radio text-blue-600"
-              />
-              <span className="ml-2">Hauler (Driver)</span>
-            </label>
-            <label className="inline-flex items-center">
-              <input
-                type="radio"
-                name="userType"
-                value="poster"
-                checked={formData.userType === 'poster'}
-                onChange={handleChange}
-                className="form-radio text-blue-600"
-              />
-              <span className="ml-2">Poster (Customer)</span>
-            </label>
-          </div>
-          {errors.userType && <p className="text-red-500 text-xs mt-1">{errors.userType}</p>}
-        </div>
-        
-        <div className="mb-6">
-          <label className="inline-flex items-center">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FiLock className="text-gray-400" />
+            </div>
             <input
-              type="checkbox"
-              name="agreeToTerms"
-              checked={formData.agreeToTerms}
-              onChange={handleChange}
-              className="form-checkbox text-blue-600"
+              id="confirm-password"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="pl-10 w-full py-2 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="••••••••"
             />
-            <span className="ml-2 text-sm text-gray-700">
-              I agree to the <a href="/terms" className="text-blue-600 hover:underline">Terms of Service</a> and <a href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</a>
-            </span>
+          </div>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            I want to:
           </label>
-          {errors.agreeToTerms && <p className="text-red-500 text-xs mt-1">{errors.agreeToTerms}</p>}
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setUserType('hauler')}
+              className={`py-3 flex justify-center items-center border rounded-md ${
+                userType === 'hauler'
+                  ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <span className="font-medium">Hauler</span>
+              <span className="ml-1 text-xs text-gray-500">(Driver)</span>
+            </button>
+            
+            <button
+              type="button"
+              onClick={() => setUserType('poster')}
+              className={`py-3 flex justify-center items-center border rounded-md ${
+                userType === 'poster'
+                  ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <span className="font-medium">Poster</span>
+              <span className="ml-1 text-xs text-gray-500">(Customer)</span>
+            </button>
+          </div>
         </div>
         
-        <div className="flex items-center justify-between">
-          <button
-            type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Creating Account...' : 'Create Account'}
-          </button>
+        <div className="flex items-center">
+          <input
+            id="terms"
+            type="checkbox"
+            required
+            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+          />
+          <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
+            I agree to the{' '}
+            <Link to="/terms" className="text-indigo-600 hover:text-indigo-500">
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link to="/privacy" className="text-indigo-600 hover:text-indigo-500">
+              Privacy Policy
+            </Link>
+          </label>
         </div>
         
-        <div className="text-center mt-6">
-          <p className="text-sm text-gray-600">
-            Already have an account?{' '}
-            <a href="/login" className="text-blue-600 hover:underline">
-              Sign In
-            </a>
-          </p>
-        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className={`w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+            loading ? 'opacity-70 cursor-not-allowed' : ''
+          }`}
+        >
+          {loading ? 'Creating Account...' : 'Create Account'}
+        </button>
       </form>
+      
+      <div className="mt-6 text-center">
+        <p className="text-sm text-gray-600">
+          Already have an account?{' '}
+          <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+            Sign in
+          </Link>
+        </p>
+      </div>
     </div>
   );
 };

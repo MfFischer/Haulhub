@@ -46,12 +46,10 @@ connectDB();
 app.use(helmet()); // Security headers
 
 // CORS configuration
-const corsOptions = {
-  origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
-app.use(cors(corsOptions));
+app.use(cors({
+  origin: 'http://localhost:3000', // Your React app's URL
+  credentials: true
+}));
 
 // Logging
 app.use(morgan('combined', { stream: logger.stream }));
@@ -69,7 +67,6 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/jobs', jobRoutes);
-app.use('/api/users', userRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/location', locationRoutes);
 

@@ -7,7 +7,7 @@ import Loading from '../components/common/Loading';
 import AuthContext from '../context/AuthContext';
 import LocationContext from '../context/LocationContext';
 import WalletContext from '../context/WalletContext';
-import api from '../utils/api';
+import api, { jobsAPI } from '../utils/api';
 
 const HaulerHome = () => {
   const [jobs, setJobs] = useState([]);
@@ -28,14 +28,20 @@ const HaulerHome = () => {
     setIsLoading(true);
     try {
       // If we have location, include it for better job recommendations
-      const params = currentLocation 
-        ? { lat: currentLocation.latitude, lng: currentLocation.longitude } 
-        : {};
+      const lat = currentLocation ? currentLocation.latitude : null;
+      const lng = currentLocation ? currentLocation.longitude : null;
       
-      const response = await api.get('/jobs/available', { params });
+      // Use the jobsAPI helper - make sure lat/lng are numbers and not null
+      const response = await jobsAPI.getAvailable(
+        lat || undefined, 
+        lng || undefined
+      );
+      
+      // Ensure response.data is an array
+      const jobsData = Array.isArray(response.data) ? response.data : [];
       
       // Calculate distance for each job if we have location
-      const jobsWithDistance = response.data.map(job => {
+      const jobsWithDistance = jobsData.map(job => {
         let distance = null;
         
         if (currentLocation && job.pickupCoordinates) {
@@ -59,6 +65,7 @@ const HaulerHome = () => {
     } catch (error) {
       console.error('Error fetching jobs:', error);
       toast.error('Failed to fetch available jobs');
+      setJobs([]); // Set empty array on error
       setIsLoading(false);
     }
   }, [currentLocation, getDistance]);

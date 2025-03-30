@@ -1,7 +1,5 @@
 import React, { useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import Header from './Header';
-import Footer from './Footer';
 import RoleToggle from './RoleToggle';
 import AuthContext from '../../context/AuthContext';
 
@@ -19,8 +17,6 @@ const Layout = ({ children }) => {
   
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      <Header />
-      
       <main className={`flex-grow ${isFullHeight ? 'flex flex-col' : 'container mx-auto px-4 py-6'}`}>
         {children}
       </main>
@@ -41,8 +37,6 @@ const Layout = ({ children }) => {
           </Link>
         </div>
       )}
-      
-      <Footer />
     </div>
   );
 };

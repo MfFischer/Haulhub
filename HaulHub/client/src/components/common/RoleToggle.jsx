@@ -1,23 +1,15 @@
 import React, { useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
 import AuthContext from '../../context/AuthContext';
 
 const RoleToggle = () => {
   const { userRole, toggleRole } = useContext(AuthContext);
-  const navigate = useNavigate();
   
   const handleToggle = () => {
-    // Toggle the role
+    // The toggleRole function in AuthContext already handles:
+    // 1. Role switching
+    // 2. localStorage update
+    // 3. Navigation to the appropriate page
     toggleRole();
-    
-    // Navigate to appropriate page based on new role
-    if (userRole === 'hauler') {
-      // If currently hauler, will change to poster
-      navigate('/poster');
-    } else {
-      // If currently poster, will change to hauler
-      navigate('/hauler');
-    }
   };
   
   return (

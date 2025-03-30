@@ -26,40 +26,18 @@ const conditionalAuth = (req, res, next) => {
  * @desc    Get region information by coordinates
  * @access  Public in dev, Private in prod
  */
-router.get('/region', conditionalAuth, 
-  [
-    check('lat', 'Latitude is required').isFloat({ min: -90, max: 90 }),
-    check('lng', 'Longitude is required').isFloat({ min: -180, max: 180 }),
-  ], 
-  (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    try {
-      const { lat, lng } = req.query;
-      
-      // Return mock region data
-      res.json({
-        success: true,
-        region: {
-          id: 'region-' + Math.floor(lat) + '-' + Math.floor(lng),
-          name: `Region ${Math.floor(lat)}°N, ${Math.floor(lng)}°E`,
-          country: 'United States',
-          isActive: true,
-          serviceAvailable: true,
-          pricing: {
-            baseRate: 10.99,
-            perKm: 1.25,
-            perMinute: 0.30
-          }
-        }
-      });
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server error');
-    }
+router.get('/region', async (req, res) => {
+  try {
+    const { lat, lng } = req.query;
+    // Your region detection logic
+    res.json({
+      success: true,
+      region: 'us' // Or your actual region detection logic
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 /**
@@ -360,39 +338,16 @@ router.get('/geocode', [
  * @desc    Convert coordinates to address
  * @access  Private
  */
-router.get('/reverse-geocode', [
-  conditionalAuth,  // Changed from auth to conditionalAuth
-  check('latitude', 'Latitude is required').isFloat({ min: -90, max: 90 }),
-  check('longitude', 'Longitude is required').isFloat({ min: -180, max: 180 }),
-], (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
+router.get('/reverse-geocode', async (req, res) => {
   try {
     const { latitude, longitude } = req.query;
-
-    // In a real app, you'd call a reverse geocoding API
-    // For this example, we'll return a mock response
-    
-    const lat = parseFloat(latitude).toFixed(4);
-    const lng = parseFloat(longitude).toFixed(4);
-    
+    // Your reverse geocoding logic
     res.json({
-      latitude: parseFloat(latitude),
-      longitude: parseFloat(longitude),
-      address: `${lat}, ${lng} Area`,
-      streetAddress: `${Math.abs(lat * 100).toFixed(0)} Main St`,
-      city: lat > 0 ? "North City" : "South City",
-      state: lng > 0 ? "East State" : "West State",
-      country: "United States",
-      postalCode: `${Math.abs((lat * 100 + lng * 100)).toFixed(0).padStart(5, '0')}`,
-      formatted: `${Math.abs(lat * 100).toFixed(0)} Main St, ${lat > 0 ? "North City" : "South City"}, ${lng > 0 ? "East State" : "West State"} ${Math.abs((lat * 100 + lng * 100)).toFixed(0).padStart(5, '0')}`
+      // Your address data
     });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 

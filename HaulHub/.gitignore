@@ -96,5 +96,10 @@ next-env.d.ts
 tmp/
 temp/
 
-# Project specific
+# Documents
 /documents/
+/documents/**/*
+*.docx
+*.doc
+*.pdf
+*.txt

@@ -12,52 +12,55 @@ export const LocationProvider = ({ children }) => {
   const [locationPermission, setLocationPermission] = useState('unknown'); // 'granted', 'denied', 'unknown'
   const [address, setAddress] = useState(null);
   const [watchId, setWatchId] = useState(null);
+  const [apiError, setApiError] = useState(false);
 
   // Initialize location on mount
   useEffect(() => {
     const initializeLocation = async () => {
       try {
-        // Check if geolocation is available
         if (!navigator.geolocation) {
           setLocationPermission('unavailable');
           setIsLoading(false);
           return;
         }
 
-        // Try to get user's position
         navigator.geolocation.getCurrentPosition(
           async (position) => {
             const { latitude, longitude } = position.coords;
             setCurrentLocation({ latitude, longitude });
             setLocationPermission('granted');
             
-            // Detect region based on coordinates
             try {
-              const region = await detectUserRegion({ latitude, longitude });
+              const region = await detectUserRegion({ latitude, longitude })
+                .catch(() => 'us'); // Fallback region
               setUserRegion(region);
-            } catch (regionError) {
-              console.error('Error detecting region:', regionError);
-              // Fallback to default region ('us')
-            }
-            
-            // Get address (reverse geocoding)
-            try {
-              const response = await api.get('/location/reverse-geocode', {
-                params: { latitude, longitude }
-              });
-              setAddress(response.data);
-            } catch (addressError) {
-              console.error('Error getting address:', addressError);
+              
+              try {
+                const addressResponse = await api.get('/location/reverse-geocode', {
+                  params: { latitude, longitude }
+                });
+                setAddress(addressResponse.data);
+              } catch (error) {
+                console.warn('Error getting address:', error);
+                setApiError(true); // Mark API as failing
+                setAddress(null);
+              }
+            } catch (error) {
+              console.warn('Error getting location data:', error);
+              setUserRegion('us');
+              setAddress(null);
             }
           },
           (error) => {
-            console.error('Geolocation error:', error);
+            console.warn('Geolocation error:', error);
             setLocationPermission('denied');
-            
-            // Detect region based on IP address as fallback
-            detectUserRegion().then(setUserRegion).catch(() => {});
+            setUserRegion('us');
           },
-          { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+          { 
+            enableHighAccuracy: true, 
+            timeout: 10000,
+            maximumAge: 10000 
+          }
         );
       } catch (error) {
         console.error('Location initialization error:', error);

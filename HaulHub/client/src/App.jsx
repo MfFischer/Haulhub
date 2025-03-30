@@ -4,8 +4,8 @@ import { AuthProvider } from './context/AuthContext';
 import { LocationProvider } from './context/LocationContext';
 import { WalletProvider } from './context/WalletContext';
 
-// Import pages
-import Home from './pages/Home';
+// Import pages - Use named imports for Home and BasicMap
+import  Home  from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import HaulerHome from './pages/HaulerHome';
@@ -22,6 +22,10 @@ import Header from './components/common/Header';
 import Footer from './components/common/Footer';
 import Layout from './components/common/Layout';
 import Loading from './components/common/Loading';
+import AuthTest from './pages/AuthTest';
+import MapTest from './pages/MapTest'; 
+import { BasicMap } from './pages/BasicMap';
+import AuthTestFull from './pages/AuthTestFull';
 
 // Protected route wrapper component
 const ProtectedRoute = ({ children, userType = null }) => {
@@ -83,6 +87,11 @@ const App = () => {
                   <Route path="/" element={<Home isMobile={isMobile} />} />
                   <Route path="/login" element={<Login isMobile={isMobile} />} />
                   <Route path="/register" element={<Register isMobile={isMobile} />} />
+                  <Route path="/auth-test" element={<AuthTest />} />
+                  <Route path="/map-test" element={<MapTest />} />
+                  <Route path="/basic-map" element={<BasicMap />} />
+                  <Route path="/auth-test-full" element={<AuthTestFull />} />
+                
                   
                   {/* Protected routes - Hauler */}
                   <Route 
@@ -167,6 +176,7 @@ const App = () => {
                   {/* 404 route */}
                   <Route path="*" element={<NotFound isMobile={isMobile} />} />
                 </Routes>
+                
               </main>
               
               <Footer isMobile={isMobile} />

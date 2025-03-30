@@ -37,6 +37,25 @@ router.get('/nearby', (req, res) => {
 });
 
 /**
+ * @route   GET api/jobs/available
+ * @desc    Get available jobs based on lat/lng
+ * @access  Private
+ */
+router.get('/available', (req, res) => {
+  const { lat, lng } = req.query;
+  
+  if (!lat || !lng) {
+    return res.status(400).json({ message: 'Latitude and longitude are required' });
+  }
+  
+  // In a real app, you'd query a geo-indexed database
+  // This is a simplified example that doesn't actually use the coordinates
+  const availableJobs = jobs.filter(job => !job.claimed);
+  
+  res.json(availableJobs);
+});
+
+/**
  * @route   POST api/jobs
  * @desc    Create a new job
  * @access  Private

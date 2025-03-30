@@ -1,43 +1,31 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5001/api', // Update port to 5001
+  baseURL: 'http://localhost:5001/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
   }
 });
 
-// Add request interceptor to handle auth
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('authToken'); // Changed from 'token' to 'authToken' to match your AuthContext
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+// Define location API endpoints
+export const locationAPI = {
+  getRegion: (lat, lng) => api.get(`/location/region?lat=${lat}&lng=${lng}`),
+  reverseGeocode: (lat, lng) => api.get(`/location/reverse-geocode?latitude=${lat}&longitude=${lng}`),
+  geocode: (address) => api.get(`/location/geocode?address=${encodeURIComponent(address)}`),
+  getJobRoute: (pickupLat, pickupLng, dropoffLat, dropoffLng) => 
+    api.get(`/location/job-route?pickupLat=${pickupLat}&pickupLng=${pickupLng}&dropoffLat=${dropoffLat}&dropoffLng=${dropoffLng}`),
+  getNearbyHaulers: (lat, lng, radius) => 
+    api.get(`/location/nearby-haulers?latitude=${lat}&longitude=${lng}&radius=${radius}`)
+};
 
-// Enhanced error handling
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.code === 'ERR_NETWORK') {
-      console.warn('Network error - Is the backend server running?');
-      // Return a fallback response instead of failing
-      return Promise.resolve({ 
-        data: {
-          region: 'us',
-          address: null
-        }
-      });
-    }
-    return Promise.reject(error);
-  }
-);
+// Define job API endpoints
+export const jobsAPI = {
+  getAvailable: (lat, lng) => api.get(`/jobs/available?lat=${lat}&lng=${lng}`),
+  getById: (id) => api.get(`/jobs/${id}`),
+  create: (jobData) => api.post('/jobs', jobData),
+  claim: (id, userId) => api.post(`/jobs/${id}/claim`, { userId }),
+  complete: (id, userId) => api.post(`/jobs/${id}/complete`, { userId })
+};
 
 export default api;
