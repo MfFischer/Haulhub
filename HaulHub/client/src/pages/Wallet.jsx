@@ -5,7 +5,8 @@ import WalletContext from '../context/WalletContext';
 import AuthContext from '../context/AuthContext';
 import LocationContext from '../context/LocationContext';
 import Loading from '../components/common/Loading';
-import api from '../utils/api';
+import api from '../utils/api'; 
+// import WithdrawalOptions from '../components/wallet/WithdrawalOptions';
 
 // Mock transaction history (in a real app, would come from API)
 const DEFAULT_TRANSACTIONS = [
@@ -51,7 +52,7 @@ const Wallet = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   
   const { isConnected, account, balance, connectWallet, updateBalances } = useContext(WalletContext);
-  const { isAuthenticated, currentUser } = useContext(AuthContext);
+  const { isAuthenticated } = useContext(AuthContext);
   const { userRegion } = useContext(LocationContext);
   
   const navigate = useNavigate();

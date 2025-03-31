@@ -1,11 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React from 'react';
+import { 
+  BrowserRouter as Router, 
+  Routes, 
+  Route, 
+  Navigate 
+} from 'react-router-dom';
+import { 
+  useState, 
+  useEffect 
+} from 'react';
 import { AuthProvider } from './context/AuthContext';
-import { LocationProvider } from './context/LocationContext';
 import { WalletProvider } from './context/WalletContext';
+import { LocationProvider } from './context/LocationContext';
+import Header from './components/common/Header';
 
-// Import pages - Use named imports for Home and BasicMap
-import  Home  from './pages/Home';
+// Import pages
+import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import HaulerHome from './pages/HaulerHome';
@@ -16,30 +26,25 @@ import CreateJob from './pages/CreateJob';
 import Profile from './pages/Profile';
 import Wallet from './pages/Wallet';
 import NotFound from './pages/NotFound';
-
-// Import components
-import Header from './components/common/Header';
-import Footer from './components/common/Footer';
-import Layout from './components/common/Layout';
-import Loading from './components/common/Loading';
 import AuthTest from './pages/AuthTest';
-import MapTest from './pages/MapTest'; 
+import MapTest from './pages/MapTest';
 import { BasicMap } from './pages/BasicMap';
 import AuthTestFull from './pages/AuthTestFull';
 
+// Import components
+import Layout from './components/common/Layout';
+import Loading from './components/common/Loading';
+
 // Protected route wrapper component
 const ProtectedRoute = ({ children, userType = null }) => {
-  // Get auth state from context
   const isAuthenticated = localStorage.getItem('token') !== null;
   const currentUserType = localStorage.getItem('userType');
   
   if (!isAuthenticated) {
-    // Redirect to login if not authenticated
     return <Navigate to="/login" replace />;
   }
   
   if (userType && currentUserType !== userType) {
-    // Redirect to appropriate home page if wrong user type
     return <Navigate to={currentUserType === 'hauler' ? '/hauler-home' : '/poster-home'} replace />;
   }
   
@@ -50,7 +55,6 @@ const App = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Check if device is mobile on resize
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -58,7 +62,6 @@ const App = () => {
     
     window.addEventListener('resize', handleResize);
     
-    // Simulate initial loading
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1000);
@@ -78,10 +81,9 @@ const App = () => {
       <AuthProvider>
         <LocationProvider>
           <WalletProvider>
-            <div className="app-container">
-              <Header isMobile={isMobile} />
-              
-              <main className="main-content">
+            <div className="app">
+              <Header />
+              <Layout>
                 <Routes>
                   {/* Public routes */}
                   <Route path="/" element={<Home isMobile={isMobile} />} />
@@ -91,16 +93,13 @@ const App = () => {
                   <Route path="/map-test" element={<MapTest />} />
                   <Route path="/basic-map" element={<BasicMap />} />
                   <Route path="/auth-test-full" element={<AuthTestFull />} />
-                
                   
                   {/* Protected routes - Hauler */}
                   <Route 
                     path="/hauler-home" 
                     element={
                       <ProtectedRoute userType="hauler">
-                        <Layout isMobile={isMobile}>
-                          <HaulerHome isMobile={isMobile} />
-                        </Layout>
+                        <HaulerHome isMobile={isMobile} />
                       </ProtectedRoute>
                     } 
                   />
@@ -110,9 +109,7 @@ const App = () => {
                     path="/poster-home" 
                     element={
                       <ProtectedRoute userType="poster">
-                        <Layout isMobile={isMobile}>
-                          <PosterHome isMobile={isMobile} />
-                        </Layout>
+                        <PosterHome isMobile={isMobile} />
                       </ProtectedRoute>
                     } 
                   />
@@ -121,9 +118,7 @@ const App = () => {
                     path="/create-job" 
                     element={
                       <ProtectedRoute userType="poster">
-                        <Layout isMobile={isMobile}>
-                          <CreateJob isMobile={isMobile} />
-                        </Layout>
+                        <CreateJob isMobile={isMobile} />
                       </ProtectedRoute>
                     } 
                   />
@@ -133,9 +128,7 @@ const App = () => {
                     path="/my-jobs" 
                     element={
                       <ProtectedRoute>
-                        <Layout isMobile={isMobile}>
-                          <MyJobs isMobile={isMobile} />
-                        </Layout>
+                        <MyJobs isMobile={isMobile} />
                       </ProtectedRoute>
                     } 
                   />
@@ -144,9 +137,7 @@ const App = () => {
                     path="/job/:id" 
                     element={
                       <ProtectedRoute>
-                        <Layout isMobile={isMobile}>
-                          <JobDetail isMobile={isMobile} />
-                        </Layout>
+                        <JobDetail isMobile={isMobile} />
                       </ProtectedRoute>
                     } 
                   />
@@ -155,9 +146,7 @@ const App = () => {
                     path="/profile" 
                     element={
                       <ProtectedRoute>
-                        <Layout isMobile={isMobile}>
-                          <Profile isMobile={isMobile} />
-                        </Layout>
+                        <Profile isMobile={isMobile} />
                       </ProtectedRoute>
                     } 
                   />
@@ -166,9 +155,7 @@ const App = () => {
                     path="/wallet" 
                     element={
                       <ProtectedRoute>
-                        <Layout isMobile={isMobile}>
-                          <Wallet isMobile={isMobile} />
-                        </Layout>
+                        <Wallet isMobile={isMobile} />
                       </ProtectedRoute>
                     } 
                   />
@@ -176,10 +163,7 @@ const App = () => {
                   {/* 404 route */}
                   <Route path="*" element={<NotFound isMobile={isMobile} />} />
                 </Routes>
-                
-              </main>
-              
-              <Footer isMobile={isMobile} />
+              </Layout>
             </div>
           </WalletProvider>
         </LocationProvider>

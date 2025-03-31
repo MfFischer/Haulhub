@@ -6,11 +6,18 @@ import LocationContext from '../../context/LocationContext';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { currentUser, isAuthenticated, logout, userRole } = useContext(AuthContext);
-  const { isConnected, account, balance, connectWallet } = useContext(WalletContext);
-  const { userRegion } = useContext(LocationContext);
+  const { currentUser, isAuthenticated, logout, userRole } = useContext(AuthContext) || {};
+  const { isConnected, account, balance, connectWallet } = useContext(WalletContext) || {};
+  const { userRegion } = useContext(LocationContext) || {};
   const navigate = useNavigate();
-  
+
+  // Add null checks before using context values
+  const handleWalletConnect = () => {
+    if (connectWallet) {
+      connectWallet();
+    }
+  };
+
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
   
@@ -82,14 +89,14 @@ const Header = () => {
                 </div>
                 
                 {/* Wallet Status */}
-                {isConnected ? (
+                {isConnected && account ? (
                   <div className="bg-green-700 rounded-full py-1 px-3 flex items-center text-sm">
-                    <span className="mr-2">{parseFloat(balance.matic).toFixed(2)} MATIC</span>
+                    <span className="mr-2">{balance?.matic ? parseFloat(balance.matic).toFixed(2) : '0'} MATIC</span>
                     <span className="text-xs text-green-300">{formatAddress(account)}</span>
                   </div>
                 ) : (
                   <button 
-                    onClick={connectWallet}
+                    onClick={handleWalletConnect}
                     className="bg-green-600 hover:bg-green-700 rounded-full py-1 px-3 text-sm transition-colors"
                   >
                     Connect Wallet
@@ -128,14 +135,14 @@ const Header = () => {
                   <Link to="/profile" className="hover:text-green-200 transition-colors" onClick={closeMenu}>Profile</Link>
                   
                   {/* Wallet Status - Mobile */}
-                  {isConnected ? (
+                  {isConnected && account ? (
                     <div className="bg-green-700 rounded-lg py-2 px-3 flex justify-between items-center text-sm">
-                      <span>{parseFloat(balance.matic).toFixed(2)} MATIC</span>
+                      <span>{balance?.matic ? parseFloat(balance.matic).toFixed(2) : '0'} MATIC</span>
                       <span className="text-xs text-green-300">{formatAddress(account)}</span>
                     </div>
                   ) : (
                     <button 
-                      onClick={() => { connectWallet(); closeMenu(); }}
+                      onClick={() => { handleWalletConnect(); closeMenu(); }}
                       className="bg-green-600 hover:bg-green-700 rounded-lg py-2 px-3 text-center text-sm transition-colors"
                     >
                       Connect Wallet
