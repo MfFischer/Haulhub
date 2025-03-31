@@ -299,4 +299,76 @@ router.get('/transaction/:id', auth, (req, res) => {
   }
 });
 
+/**
+ * @route   POST api/payments/withdraw-fiat
+ * @desc    Withdraw to PayPal or Bank via Stripe
+ * @access  Private
+ */
+router.post('/withdraw-fiat', [
+  auth,
+  check('amount', 'Amount is required').isFloat({ min: 0.01 }),
+  check('method', 'Valid payment method required').isIn(['stripe', 'paypal']),
+  check('accountDetails', 'Account details required').not().isEmpty(),
+], async (req, res) => {
+  try {
+    const { amount, method, accountDetails } = req.body;
+    
+    if (method === 'stripe') {
+      // Implement Stripe payout
+      const payout = await stripe.payouts.create({
+        amount: amount * 100, // Convert to cents
+        currency: 'usd',
+        method: 'standard',
+        destination: accountDetails.accountId
+      });
+      
+      // Create transaction record
+      const transaction = new Transaction({
+        type: 'withdrawal',
+        amount,
+        status: 'processing',
+        paymentMethod: {
+          provider: 'stripe',
+          reference: payout.id
+        }
+      });
+      
+      await transaction.save();
+    } else if (method === 'paypal') {
+      // Implement PayPal payout
+      const payout = await paypal.payout.create({
+        sender_batch_header: {
+          email_subject: "You have a payment from Microsendr"
+        },
+        items: [{
+          recipient_type: "EMAIL",
+          amount: {
+            value: amount,
+            currency: "USD"
+          },
+          receiver: accountDetails.email
+        }]
+      });
+      
+      // Create transaction record
+      const transaction = new Transaction({
+        type: 'withdrawal',
+        amount,
+        status: 'processing',
+        paymentMethod: {
+          provider: 'paypal',
+          reference: payout.batch_header.payout_batch_id
+        }
+      });
+      
+      await transaction.save();
+    }
+    
+    res.status(200).json({ message: 'Withdrawal initiated successfully' });
+  } catch (error) {
+    console.error('Withdrawal error:', error);
+    res.status(500).json({ error: 'Withdrawal failed' });
+  }
+});
+
 module.exports = router;
