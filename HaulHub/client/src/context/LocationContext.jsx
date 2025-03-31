@@ -27,6 +27,10 @@ export const LocationProvider = ({ children }) => {
         navigator.geolocation.getCurrentPosition(
           async (position) => {
             const { latitude, longitude } = position.coords;
+            if (!latitude || !longitude) {
+              console.error('Invalid coordinates received');
+              return;
+            }
             setCurrentLocation({ latitude, longitude });
             setLocationPermission('granted');
             
@@ -64,7 +68,6 @@ export const LocationProvider = ({ children }) => {
         );
       } catch (error) {
         console.error('Location initialization error:', error);
-      } finally {
         setIsLoading(false);
       }
     };

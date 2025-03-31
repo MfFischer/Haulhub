@@ -57,10 +57,20 @@ const RegisterForm = () => {
   };
   
   return (
-    <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
-        Create Your HaulHub Account
-      </h2>
+    <div className="max-w-md w-full space-y-8 p-6 bg-white rounded-xl shadow-lg">
+      <div className="text-center">
+        <img
+          className="mx-auto h-12 w-auto"
+          src="/Microsender-logo.png"
+          alt="Microsender"
+        />
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          Create Your Microsender Account
+        </h2>
+        <p className="mt-2 text-center text-sm text-gray-600">
+          Join your neighborhood help network
+        </p>
+      </div>
       
       {error && (
         <div className="mb-4 p-3 bg-red-50 text-red-500 rounded-md text-sm">
@@ -216,7 +226,7 @@ const RegisterForm = () => {
         <p className="text-sm text-gray-600">
           Already have an account?{' '}
           <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-            Sign in
+            Sign in to Microsender
           </Link>
         </p>
       </div>

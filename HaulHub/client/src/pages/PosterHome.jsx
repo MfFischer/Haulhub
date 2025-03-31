@@ -82,7 +82,7 @@ const PosterHome = () => {
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl font-bold text-gray-900">Request a Haul</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Ask for a Favor</h1>
               <button
                 onClick={() => setShowCalculator(!showCalculator)}
                 className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg text-sm transition-colors flex items-center"
@@ -103,25 +103,19 @@ const PosterHome = () => {
             
             {activeJobs.length === 0 ? (
               <div className="text-center py-8">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                </svg>
-                <h3 className="mt-4 text-xl font-medium text-gray-900">No active hauls</h3>
-                <p className="mt-2 text-gray-600">
-                  You don't have any active haul requests at the moment.
-                </p>
+                <p className="text-gray-600 mb-4">Need help with something? Ask your neighbors for a favor!</p>
                 <Link
                   to="/create-job"
                   className="mt-6 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 transition-colors"
                 >
-                  Create a New Haul Request
+                  Ask for a New Favor
                 </Link>
               </div>
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="md:col-span-1">
-                    <h3 className="text-lg font-medium text-gray-900 mb-3">Your Active Hauls</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-3">Your Active Favors</h3>
                     <div className="space-y-2">
                       {activeJobs.map((job) => (
                         <div
@@ -164,7 +158,7 @@ const PosterHome = () => {
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                       </svg>
-                      New Haul Request
+                      Ask for a New Favor
                     </Link>
                   </div>
                   

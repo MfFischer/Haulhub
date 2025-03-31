@@ -3,11 +3,11 @@ module.exports = {
     theme: {
       extend: {
         colors: {
-          'haulhub-primary': '#16a34a', // green-600
-          'haulhub-secondary': '#134e4a', // teal-900
-          'haulhub-accent': '#15803d', // green-700
-          'haulhub-background': '#f9fafb', // gray-50
-          'haulhub-dark': '#1f2937', // gray-800
+          'microsendr-primary': '#16a34a', // green-600
+          'microsendr-secondary': '#134e4a', // teal-900
+          'microsendr-accent': '#15803d', // green-700
+          'microsendr-background': '#f9fafb', // gray-50
+          'microsendr-dark': '#1f2937', // gray-800
         },
       },
     },
@@ -15,7 +15,7 @@ module.exports = {
     daisyui: {
       themes: [
         {
-          haulhub: {
+          microsendr: {
             primary: "#16a34a",
             secondary: "#134e4a",
             accent: "#15803d",

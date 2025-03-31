@@ -33,13 +33,56 @@ const MyJobs = () => {
       setIsLoading(true);
       try {
         // Different endpoint based on user role
-        const endpoint = userRole === 'hauler' ? '/jobs/hauler' : '/jobs/poster';
+        // Using the correct endpoints from your backend
+        const endpoint = userRole === 'hauler' ? '/jobs/hauler' : '/jobs/poster/active';
+        console.log('Fetching jobs from endpoint:', endpoint);
+        
         const response = await api.get(endpoint);
         
         setJobs(response.data);
       } catch (error) {
         console.error('Error fetching jobs:', error);
         toast.error('Failed to load job history');
+        
+        // Add mock data for development in case of failure
+        if (process.env.NODE_ENV === 'development') {
+          setJobs([
+            {
+              id: 'mock-job-1',
+              title: 'Furniture Delivery',
+              description: 'Deliver a sofa to customer location',
+              price: { amount: 45.00, currencySymbol: '$' },
+              weight: 30,
+              weightUnit: 'kg',
+              distance: 3.5,
+              distanceUnit: 'mi',
+              isRush: false,
+              vehicleType: 'Van',
+              pickup: '123 Main St',
+              dropoff: '456 Elm St',
+              status: 'in_progress',
+              createdAt: new Date().toISOString(),
+              postedAt: new Date().toISOString()
+            },
+            {
+              id: 'mock-job-2',
+              title: 'Urgent Package',
+              description: 'Deliver a package ASAP',
+              price: { amount: 35.00, currencySymbol: '$' },
+              weight: 5,
+              weightUnit: 'kg',
+              distance: 2.1,
+              distanceUnit: 'mi',
+              isRush: true,
+              vehicleType: 'Car',
+              pickup: '789 Oak St',
+              dropoff: '101 Pine St',
+              status: 'completed',
+              createdAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+              postedAt: new Date(Date.now() - 86400000).toISOString() // 1 day ago
+            }
+          ]);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -55,7 +98,7 @@ const MyJobs = () => {
     if (activeTab === 'all') return true;
     
     if (activeTab === 'current') {
-      return ['created', 'accepted', 'in_progress'].includes(job.status);
+      return ['created', 'accepted', 'in_progress', 'open'].includes(job.status);
     }
     
     if (activeTab === 'completed') {
@@ -69,15 +112,15 @@ const MyJobs = () => {
   const sortedJobs = [...filteredJobs].sort((a, b) => {
     switch (sortBy) {
       case 'date-desc':
-        return new Date(b.createdAt) - new Date(a.createdAt);
+        return new Date(b.createdAt || b.postedAt) - new Date(a.createdAt || a.postedAt);
       case 'date-asc':
-        return new Date(a.createdAt) - new Date(b.createdAt);
+        return new Date(a.createdAt || a.postedAt) - new Date(b.createdAt || b.postedAt);
       case 'price-desc':
-        return b.price.amount - a.price.amount;
+        return (b.price?.amount || 0) - (a.price?.amount || 0);
       case 'price-asc':
-        return a.price.amount - b.price.amount;
+        return (a.price?.amount || 0) - (b.price?.amount || 0);
       default:
-        return new Date(b.createdAt) - new Date(a.createdAt);
+        return new Date(b.createdAt || b.postedAt) - new Date(a.createdAt || a.postedAt);
     }
   });
   
@@ -88,6 +131,16 @@ const MyJobs = () => {
     } catch (error) {
       return 'Invalid date';
     }
+  };
+  
+  // Helper function to safely get address string
+  const getAddressString = (locationObj) => {
+    if (!locationObj) return 'Address not available';
+    if (typeof locationObj === 'string') return locationObj;
+    if (locationObj.address) return locationObj.address;
+    if (locationObj.latitude && locationObj.longitude) 
+      return `${locationObj.latitude.toFixed(6)}, ${locationObj.longitude.toFixed(6)}`;
+    return 'Address not available';
   };
   
   // Get currency symbol for region
@@ -154,7 +207,7 @@ const MyJobs = () => {
               >
                 Current
                 <span className="ml-2 py-0.5 px-2 text-xs rounded-full bg-gray-100">
-                  {jobs.filter(job => ['created', 'accepted', 'in_progress'].includes(job.status)).length}
+                  {jobs.filter(job => ['created', 'accepted', 'in_progress', 'open'].includes(job.status)).length}
                 </span>
               </button>
               
@@ -231,20 +284,20 @@ const MyJobs = () => {
                     <div className="p-4">
                       <div className="flex items-start justify-between">
                         <div>
-                          <h3 className="text-lg font-medium text-gray-900">{job.title}</h3>
-                          <p className="text-sm text-gray-500">{formatDate(job.createdAt)}</p>
+                          <h3 className="text-lg font-medium text-gray-900">{job.title || 'Untitled Job'}</h3>
+                          <p className="text-sm text-gray-500">{formatDate(job.createdAt || job.postedAt || new Date())}</p>
                         </div>
-                        <JobStatusBadge status={job.status} />
+                        <JobStatusBadge status={job.status || 'created'} />
                       </div>
                       
                       <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
                           <p className="text-gray-500">From</p>
-                          <p className="font-medium">{job.pickup}</p>
+                          <p className="font-medium">{getAddressString(job.pickup)}</p>
                         </div>
                         <div>
                           <p className="text-gray-500">To</p>
-                          <p className="font-medium">{job.dropoff}</p>
+                          <p className="font-medium">{getAddressString(job.dropoff)}</p>
                         </div>
                         <div>
                           <p className="text-gray-500">Distance</p>
@@ -252,7 +305,7 @@ const MyJobs = () => {
                         </div>
                         <div>
                           <p className="text-gray-500">Weight</p>
-                          <p className="font-medium">{job.weight} {job.weightUnit || 'kg'}</p>
+                          <p className="font-medium">{job.weight || 'N/A'} {job.weightUnit || 'kg'}</p>
                         </div>
                       </div>
                       
@@ -270,7 +323,7 @@ const MyJobs = () => {
                           )}
                         </div>
                         <div className="font-bold text-green-600">
-                          {getCurrencySymbol()}{job.price.amount.toFixed(2)}
+                          {getCurrencySymbol()}{job.price?.amount ? job.price.amount.toFixed(2) : '0.00'}
                         </div>
                       </div>
                     </div>

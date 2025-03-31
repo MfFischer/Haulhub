@@ -46,10 +46,12 @@ const Header = () => {
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <Link to="/" className="text-2xl font-bold flex items-center" onClick={closeMenu}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-            </svg>
-            HaulHub
+            <img 
+              src="/Microsender-white.png" 
+              alt="Microsendr Logo" 
+              className="h-8 mr-2"
+            />
+            Microsendr
           </Link>
           
           {/* Desktop Navigation */}
@@ -57,10 +59,10 @@ const Header = () => {
             {isAuthenticated ? (
               <>
                 <Link to={userRole === 'hauler' ? '/hauler-home' : '/poster-home'} className="hover:text-green-200 transition-colors">
-                  {userRole === 'hauler' ? 'Find Jobs' : 'Request Haul'}
+                  {userRole === 'hauler' ? 'Available Favors' : 'Ask for a Favor'}
                 </Link>
-                <Link to="/my-jobs" className="hover:text-green-200 transition-colors">My Jobs</Link>
-                <Link to="/wallet" className="hover:text-green-200 transition-colors">Wallet</Link>
+                <Link to="/my-jobs" className="hover:text-green-200 transition-colors">My Favors</Link>
+                <Link to="/wallet" className="hover:text-green-200 transition-colors">Tips & Earnings</Link>
                 <div className="relative group">
                   <button className="flex items-center space-x-1 hover:text-green-200 transition-colors">
                     <span>{currentUser?.name || 'Account'}</span>
@@ -98,7 +100,7 @@ const Header = () => {
               <>
                 <Link to="/login" className="hover:text-green-200 transition-colors">Login</Link>
                 <Link to="/register" className="bg-green-600 hover:bg-green-700 py-2 px-4 rounded-full transition-colors">
-                  Sign Up
+                  Join Community
                 </Link>
               </>
             )}
@@ -119,10 +121,10 @@ const Header = () => {
               {isAuthenticated ? (
                 <>
                   <Link to={userRole === 'hauler' ? '/hauler-home' : '/poster-home'} className="hover:text-green-200 transition-colors" onClick={closeMenu}>
-                    {userRole === 'hauler' ? 'Find Jobs' : 'Request Haul'}
+                    {userRole === 'hauler' ? 'Available Favors' : 'Ask for a Favor'}
                   </Link>
-                  <Link to="/my-jobs" className="hover:text-green-200 transition-colors" onClick={closeMenu}>My Jobs</Link>
-                  <Link to="/wallet" className="hover:text-green-200 transition-colors" onClick={closeMenu}>Wallet</Link>
+                  <Link to="/my-jobs" className="hover:text-green-200 transition-colors" onClick={closeMenu}>My Favors</Link>
+                  <Link to="/wallet" className="hover:text-green-200 transition-colors" onClick={closeMenu}>Tips & Earnings</Link>
                   <Link to="/profile" className="hover:text-green-200 transition-colors" onClick={closeMenu}>Profile</Link>
                   
                   {/* Wallet Status - Mobile */}
@@ -155,7 +157,7 @@ const Header = () => {
                     className="bg-green-600 hover:bg-green-700 py-2 px-4 rounded-lg text-center transition-colors"
                     onClick={closeMenu}
                   >
-                    Sign Up
+                    Join Community
                   </Link>
                 </>
               )}
@@ -169,13 +171,13 @@ const Header = () => {
         <div className="bg-green-700 py-2">
           <div className="container mx-auto px-4 flex items-center justify-between">
             <div className="text-sm flex items-center">
-              <span className="font-medium mr-2">Mode:</span>
+              <span className="font-medium mr-2">You're:</span>
               <span className="bg-green-600 px-2 py-0.5 rounded-full text-xs">
-                {userRole === 'hauler' ? 'Hauler' : 'Poster'}
+                {userRole === 'hauler' ? 'Helping Others' : 'Requesting Help'}
               </span>
             </div>
             <div className="text-sm flex items-center">
-              <span className="font-medium mr-2">Region:</span>
+              <span className="font-medium mr-2">Area:</span>
               <span className="bg-green-600 px-2 py-0.5 rounded-full text-xs">
                 {userRegion.toUpperCase()} ({getCurrencySymbol()})
               </span>

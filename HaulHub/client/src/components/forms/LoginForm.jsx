@@ -46,10 +46,20 @@ const LoginForm = () => {
   };
   
   return (
-    <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
-        Sign In to HaulHub
-      </h2>
+    <div className="max-w-md w-full space-y-8 p-6 bg-white rounded-xl shadow-lg">
+      <div className="text-center">
+        <img
+          className="mx-auto h-12 w-auto"
+          src="/Microsender-logo.png"
+          alt="Microsender"
+        />
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          Sign in to Microsender
+        </h2>
+        <p className="mt-2 text-center text-sm text-gray-600">
+          Welcome back to your neighborhood help network
+        </p>
+      </div>
       
       {error && (
         <div className="mb-4 p-3 bg-red-50 text-red-500 rounded-md text-sm">
@@ -126,55 +136,13 @@ const LoginForm = () => {
         </button>
       </form>
       
-      <div className="mt-6">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Don't have an account?</span>
-          </div>
-        </div>
-        
-        <div className="mt-6">
-          <Link
-            to="/register"
-            className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Sign Up
+      <div className="mt-6 text-center">
+        <p className="text-sm text-gray-600">
+          New to Microsender?{' '}
+          <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+            Create an account
           </Link>
-        </div>
-        
-        {/* FOR DEVELOPMENT/TESTING: Quick login buttons */}
-        <div className="mt-6 space-y-2">
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Test Accounts</span>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setEmail('hauler@example.com');
-                setPassword('password123');
-              }}
-              className="py-1 px-2 text-xs border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-            >
-              Test Hauler
-            </button>
-            
-            <button
-              type="button"
-              onClick={() => {
-                setEmail('poster@example.com');
-                setPassword('password123');
-              }}
-              className="py-1 px-2 text-xs border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-            >
-              Test Poster
-            </button>
-          </div>
-        </div>
+        </p>
       </div>
     </div>
   );

@@ -7,7 +7,7 @@ import Loading from '../components/common/Loading';
 import AuthContext from '../context/AuthContext';
 import LocationContext from '../context/LocationContext';
 import WalletContext from '../context/WalletContext';
-import api from '../utils/api';
+import api from '../utils/api';  // Make sure this is importing the default export
 
 const HaulerHome = () => {
   const [jobs, setJobs] = useState([]);
@@ -35,6 +35,12 @@ const HaulerHome = () => {
     setApiError(false);
     
     try {
+      // Check if API is available
+      if (!api) {
+        console.error('API client is undefined!');
+        throw new Error('API client is not initialized');
+      }
+      
       // Default coordinates in case location is not available
       const defaultLat = 40.7128; // New York City
       const defaultLng = -74.0060;
@@ -45,57 +51,74 @@ const HaulerHome = () => {
       
       console.log("Fetching jobs with coordinates:", { lat, lng });
       
-      // Add a timeout to the API call to avoid hanging forever
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-      
-      // Make direct API call instead of using helper
-      const response = await api.get('/jobs/available', {
-        params: { lat, lng },
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      
-      // Ensure response.data is an array
-      const jobsData = Array.isArray(response.data) ? response.data : [];
-      console.log("Jobs data received:", jobsData);
-      
-      // Calculate distance for each job if we have location
-      const jobsWithDistance = jobsData.map(job => {
-        let distance = null;
-        
-        if (currentLocation && job.pickupCoordinates) {
-          distance = getDistance(
-            currentLocation,
+      // Use mock data for development if API fails
+      if (process.env.NODE_ENV === 'development') {
+        // Attempt to use the API, but have a fallback
+        try {
+          const response = await api.get('/jobs/available', {
+            params: { lat, lng }
+          });
+          
+          const jobsData = Array.isArray(response.data) ? response.data : [];
+          setJobs(jobsData);
+        } catch (apiError) {
+          console.warn('API request failed, using mock data:', apiError);
+          
+          // Mock data for development
+          setJobs([
             {
-              latitude: job.pickupCoordinates.lat,
-              longitude: job.pickupCoordinates.lng
+              id: 'mock-job-1',
+              title: 'Furniture Delivery',
+              price: { amount: 45.00, currencySymbol: '$' },
+              weight: 30,
+              weightUnit: 'kg',
+              distance: 3.5,
+              distanceUnit: 'mi',
+              isRush: false,
+              vehicleType: 'Van',
+              pickup: '123 Main St',
+              dropoff: '456 Elm St',
+              description: 'Deliver a sofa to customer location',
+              postedAt: new Date().toISOString(),
+              pickupCoordinates: { lat: 50.374, lng: 8.735 },
+              dropoffCoordinates: { lat: 50.394, lng: 8.755 }
+            },
+            {
+              id: 'mock-job-2',
+              title: 'Urgent Package',
+              price: { amount: 35.00, currencySymbol: '$' },
+              weight: 5,
+              weightUnit: 'kg',
+              distance: 2.1,
+              distanceUnit: 'mi',
+              isRush: true,
+              vehicleType: 'Car',
+              pickup: '789 Oak St',
+              dropoff: '101 Pine St',
+              description: 'Deliver a package ASAP',
+              postedAt: new Date().toISOString(),
+              pickupCoordinates: { lat: 50.384, lng: 8.705 },
+              dropoffCoordinates: { lat: 50.375, lng: 8.740 }
             }
-          );
+          ]);
+          
+          setApiError(true);
         }
+      } else {
+        // Production mode - make the API call
+        const response = await api.get('/jobs/available', {
+          params: { lat, lng }
+        });
         
-        return {
-          ...job,
-          distance
-        };
-      });
-      
-      setJobs(jobsWithDistance);
-      setIsLoading(false);
+        const jobsData = Array.isArray(response.data) ? response.data : [];
+        setJobs(jobsData);
+      }
     } catch (error) {
       console.error('Error fetching jobs:', error);
-      
-      // Only show a toast error if it's not an abort error (timeout)
-      if (error.name !== 'AbortError') {
-        toast.error('Failed to fetch available jobs. Server may be offline.');
-      }
-      
       setApiError(true);
       
-      // Add some sample job data for testing if no real data is available
+      // Always provide mock data in development
       if (process.env.NODE_ENV === 'development') {
-        // Mock data for development
         setJobs([
           {
             id: 'mock-job-1',
@@ -113,32 +136,15 @@ const HaulerHome = () => {
             postedAt: new Date().toISOString(),
             pickupCoordinates: { lat: 50.374, lng: 8.735 },
             dropoffCoordinates: { lat: 50.394, lng: 8.755 }
-          },
-          {
-            id: 'mock-job-2',
-            title: 'Urgent Package',
-            price: { amount: 35.00, currencySymbol: '$' },
-            weight: 5,
-            weightUnit: 'kg',
-            distance: 2.1,
-            distanceUnit: 'mi',
-            isRush: true,
-            vehicleType: 'Car',
-            pickup: '789 Oak St',
-            dropoff: '101 Pine St',
-            description: 'Deliver a package ASAP',
-            postedAt: new Date().toISOString(),
-            pickupCoordinates: { lat: 50.384, lng: 8.705 },
-            dropoffCoordinates: { lat: 50.375, lng: 8.740 }
           }
         ]);
       } else {
-        setJobs([]); // Set empty array on error in production
+        setJobs([]);
       }
-      
+    } finally {
       setIsLoading(false);
     }
-  }, [currentLocation, getDistance]);
+  }, [currentLocation]);
   
   // Apply filters whenever jobs or filter mode changes
   useEffect(() => {
@@ -161,11 +167,19 @@ const HaulerHome = () => {
         break;
       case 'price':
         // Sort by price (highest first)
-        sorted = sorted.sort((a, b) => b.price.amount - a.price.amount);
+        sorted = sorted.sort((a, b) => {
+          const aAmount = a.price?.amount || 0;
+          const bAmount = b.price?.amount || 0;
+          return bAmount - aAmount;
+        });
         break;
       case 'weight':
         // Sort by weight (lightest first)
-        sorted = sorted.sort((a, b) => a.weight - b.weight);
+        sorted = sorted.sort((a, b) => {
+          const aWeight = a.weight || 0;
+          const bWeight = b.weight || 0;
+          return aWeight - bWeight;
+        });
         break;
       default:
         break;
@@ -307,8 +321,8 @@ const HaulerHome = () => {
       {/* Main content - Map or List view */}
       <div className="flex-grow overflow-hidden">
         {viewMode === 'map' ? (
-          <MapView
-            jobs={filteredJobs}
+          <MapView 
+            jobs={filteredJobs} 
             activeJobId={activeJobId}
             onJobSelect={handleJobSelect}
             onJobAccept={handleAcceptJob}

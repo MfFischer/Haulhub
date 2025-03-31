@@ -4,6 +4,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import api from '../../utils/api';
 
+
 // Set Mapbox access token
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
 
@@ -371,7 +372,7 @@ const JobTracker = ({ job, onStatusUpdate }) => {
               </div>
               <div className="ml-3">
                 <p className="text-sm text-green-700">
-                  Your delivery has been completed. Thank you for using HaulHub!
+                  Your favor has been completed. Thank you for using Microsender!
                 </p>
               </div>
             </div>
