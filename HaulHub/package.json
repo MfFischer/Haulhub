@@ -24,5 +24,14 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.1"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express-rate-limit": "^7.5.0",
+    "express-validator": "^7.2.1",
+    "helmet": "^8.1.0",
+    "rate-limit-redis": "^4.2.0",
+    "redis": "^4.7.0",
+    "winston": "^3.17.0"
   }
 }

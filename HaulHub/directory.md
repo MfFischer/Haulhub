@@ -83,6 +83,7 @@ HaulHub/
 │   │   └── users.js                  # User routes
 │   ├── config/                       # Configuration files
 │   │   ├── db.js                     # Database configuration
+│   │   ├── redis.js                  # Redis configuration
 │   │   └── passport.js               # Authentication configuration
 │   ├── controllers/                  # Route controllers
 │   │   ├── authController.js
@@ -93,6 +94,7 @@ HaulHub/
 │   ├── middlewares/                  # Custom middleware
 │   │   ├── auth.js                   # Auth middleware
 │   │   ├── error.js                  # Error handling
+│   │   ├── rateLimiter.js            # Rate limiting
 │   │   └── validation.js             # Request validation
 │   ├── models/                       # Database models
 │   │   ├── Job.js
@@ -106,9 +108,12 @@ HaulHub/
 │   │   └── push.js                   # Push notifications
 │   ├── utils/                        # Utility functions
 │   │   ├── logger.js                 # Logging utility
+│   │   ├── redis.js                  # Redis utility
 │   │   └── validators.js             # Validation helpers
-│   ├── .env                          # Environment variables
+│   ├── uploads/                      # File upload directory
+│   ├── logs/                         # Application logs
 │   ├── index.js                      # Server entry point
+│   ├── .env                          # Environment variables
 │   ├── package.json                  # Dependencies and scripts
 │   └── README.md                     # Backend documentation
 │
@@ -136,8 +141,10 @@ HaulHub/
 │   ├── Dockerfile.client             # Client Dockerfile
 │   ├── Dockerfile.server             # Server Dockerfile
 │   └── nginx/                        # Nginx configuration
+│       ├── nginx.conf
+│       └── default.conf
 │
-├── .github/                          # GitHub workflows and templates
+├── .github/                          # GitHub workflows
 │   └── workflows/
 │       ├── ci.yml                    # CI workflow
 │       └── deploy.yml                # Deployment workflow
